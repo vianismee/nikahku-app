@@ -1,0 +1,62 @@
+/* ═══════════════════════════════════════════════
+   NIKAHKU — Flat Mode Component Overrides
+   No shadows, border-only cards, warm palette
+   ═══════════════════════════════════════════════ */
+
+/* Flat Cards — border only, no shadow */
+[data-slot="card"] {
+  border: 1px solid var(--border);
+  box-shadow: none !important;
+  transition: border-color 0.2s ease;
+}
+
+[data-slot="card"]:hover {
+  border-color: var(--primary);
+}
+
+/* Flat Buttons */
+button,
+[role="button"] {
+  box-shadow: none !important;
+}
+
+/* Flat Inputs */
+input,
+textarea,
+select,
+[data-slot="input"],
+[data-slot="textarea"] {
+  box-shadow: none !important;
+  border: 1px solid var(--border);
+  transition: border-color 0.2s ease;
+}
+
+input:focus,
+textarea:focus,
+[data-slot="input"]:focus,
+[data-slot="textarea"]:focus {
+  border-color: var(--primary);
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}
+
+/* Flat Dialog/Sheet */
+[data-slot="dialog-content"],
+[data-slot="sheet-content"] {
+  box-shadow: none !important;
+  border: 1px solid var(--border);
+}
+
+/* Flat Popover/Dropdown */
+[data-slot="popover-content"],
+[data-slot="dropdown-menu-content"],
+[data-slot="select-content"] {
+  box-shadow: none !important;
+  border: 1px solid var(--border);
+}
+
+/* Number typography — JetBrains Mono */
+.font-number {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-variant-numeric: tabular-nums;
+}

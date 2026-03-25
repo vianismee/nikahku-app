@@ -1,0 +1,125 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { PageHeader } from "@/components/shared/page-header";
+import { EmptyState } from "@/components/shared/empty-state";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { SeserahanSummary } from "@/components/seserahan/seserahan-summary";
+import { SeserahanTable } from "@/components/seserahan/seserahan-table";
+import { SeserahanCardList } from "@/components/seserahan/seserahan-card-list";
+import { SeserahanFormDialog } from "@/components/seserahan/seserahan-form-dialog";
+import { useWedding } from "@/lib/hooks/use-wedding";
+import { useSeserahan } from "@/lib/hooks/use-seserahan";
+import { useUIStore } from "@/lib/stores/ui-store";
+import { Gift, Plus } from "lucide-react";
+import type { SeserahanCategory } from "@/lib/constants/seserahan-statuses";
+
+export default function SeserahanPage() {
+  const { data: wedding, isLoading: weddingLoading } = useWedding();
+  const weddingId = wedding?.id;
+  const { data: items, isLoading: itemsLoading } = useSeserahan(weddingId);
+  const { seserahanTab, setSeserahanTab } = useUIStore();
+  const [formOpen, setFormOpen] = useState(false);
+
+  const filtered = useMemo(() => {
+    if (!items) return [];
+    if (seserahanTab === "semua") return items;
+    return items.filter((i) => i.category === seserahanTab);
+  }, [items, seserahanTab]);
+
+  const defaultCategory: SeserahanCategory | undefined =
+    seserahanTab === "mahar" || seserahanTab === "seserahan" ? seserahanTab : undefined;
+
+  if (weddingLoading || itemsLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-48" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-24" />
+          ))}
+        </div>
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
+  }
+
+  if (!weddingId) {
+    return (
+      <EmptyState
+        icon={Gift}
+        title="Belum ada pernikahan"
+        description="Buat pernikahan terlebih dahulu"
+        actionLabel="Ke Dashboard"
+        actionHref="/dashboard"
+      />
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="Mahar & Seserahan"
+        description="Kelola daftar mahar dan seserahan pernikahan"
+        actions={
+          <Button size="sm" onClick={() => setFormOpen(true)}>
+            <Plus className="h-4 w-4 mr-1" />
+            Tambah Item
+          </Button>
+        }
+      />
+
+      <Tabs
+        value={seserahanTab}
+        onValueChange={(v) => setSeserahanTab(v as "semua" | "mahar" | "seserahan")}
+      >
+        <TabsList>
+          <TabsTrigger value="semua">Semua</TabsTrigger>
+          <TabsTrigger value="mahar">Mahar</TabsTrigger>
+          <TabsTrigger value="seserahan">Seserahan</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value={seserahanTab}>
+          <div className="space-y-6">
+            <SeserahanSummary items={filtered} />
+
+            {filtered.length === 0 && items && items.length === 0 ? (
+              <EmptyState
+                icon={Gift}
+                title="Belum ada item"
+                description="Tambahkan mahar atau seserahan untuk mulai mengelola"
+                actionLabel="Tambah Item"
+                onAction={() => setFormOpen(true)}
+              />
+            ) : filtered.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-12">
+                Tidak ada item dalam kategori ini
+              </p>
+            ) : (
+              <>
+                {/* Desktop: Table */}
+                <div className="hidden md:block">
+                  <SeserahanTable items={filtered} weddingId={weddingId} />
+                </div>
+
+                {/* Mobile: Cards */}
+                <div className="md:hidden">
+                  <SeserahanCardList items={filtered} weddingId={weddingId} />
+                </div>
+              </>
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      <SeserahanFormDialog
+        weddingId={weddingId}
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        defaultCategory={defaultCategory}
+      />
+    </div>
+  );
+}
