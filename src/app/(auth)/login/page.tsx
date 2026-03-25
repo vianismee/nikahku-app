@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -8,66 +8,81 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
+
+function translateAuthError(message: string): string {
+  if (message.includes("Invalid login credentials")) return "Email atau password salah";
+  if (message.includes("Email not confirmed")) return "Email belum dikonfirmasi, cek inbox kamu";
+  if (message.includes("Too many requests")) return "Terlalu banyak percobaan, coba lagi nanti";
+  if (message.includes("User not found")) return "Akun tidak ditemukan";
+  if (message.includes("network") || message.includes("fetch")) return "Koneksi gagal, periksa internet kamu";
+  return message;
+}
 
 export default function LoginPage() {
+  const supabase = useRef(createClient()).current;
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
-
-  const supabase = createClient();
 
   async function handleEmailLogin(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    setError(null);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
 
-    if (error) {
-      setError(error.message);
+      if (error) {
+        toast.error(translateAuthError(error.message));
+        setLoading(false);
+        return;
+      }
+
+      toast.success("Berhasil masuk!");
+      window.location.replace("/dashboard");
+    } catch {
+      toast.error("Koneksi gagal, periksa internet kamu");
       setLoading(false);
-      return;
     }
-
-    window.location.href = "/dashboard";
   }
 
   async function handleGoogleLogin() {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/callback`,
-      },
-    });
-    if (error) setError(error.message);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: `${window.location.origin}/callback` },
+      });
+      if (error) toast.error(translateAuthError(error.message));
+    } catch {
+      toast.error("Koneksi gagal, periksa internet kamu");
+    }
   }
 
   async function handleMagicLink() {
     if (!email) {
-      setError("Masukkan email terlebih dahulu");
+      toast.error("Masukkan email terlebih dahulu");
       return;
     }
     setLoading(true);
-    setError(null);
 
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/callback`,
-      },
-    });
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: `${window.location.origin}/callback` },
+      });
 
-    if (error) {
-      setError(error.message);
-    } else {
-      setMagicLinkSent(true);
+      if (error) {
+        toast.error(translateAuthError(error.message));
+      } else {
+        setMagicLinkSent(true);
+      }
+    } catch {
+      toast.error("Koneksi gagal, periksa internet kamu");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   return (
@@ -152,10 +167,6 @@ export default function LoginPage() {
                     required
                   />
                 </div>
-
-                {error && (
-                  <p className="text-sm text-destructive">{error}</p>
-                )}
 
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Memproses..." : "Masuk"}
