@@ -1,0 +1,287 @@
+{
+  "navbar": {
+    "brand": "NIKAHKU",
+    "links": [
+      { "label": "Fitur", "href": "#fitur" },
+      { "label": "Cara Kerja", "href": "#cara-kerja" },
+      { "label": "Harga", "href": "#harga" },
+      { "label": "Testimoni", "href": "#testimoni" },
+      { "label": "FAQ", "href": "#faq" }
+    ],
+    "cta": {
+      "label": "Mulai Gratis",
+      "href": "/register"
+    }
+  },
+  "hero": {
+    "badge": "Platform Perencanaan Pernikahan #1 di Indonesia",
+    "headline": "Rencanakan Pernikahan Impianmu Tanpa Ribet",
+    "subheadline": "Kelola budget, vendor, tamu undangan, seserahan, dan checklist pernikahan — semua dalam satu platform yang mudah dan elegan.",
+    "primaryCta": {
+      "label": "Mulai Rencanakan Sekarang",
+      "href": "/register"
+    },
+    "secondaryCta": {
+      "label": "Lihat Fitur Lengkap",
+      "href": "#fitur"
+    },
+    "socialProof": {
+      "text": "Dipercaya oleh",
+      "count": "2,500+",
+      "suffix": "pasangan di seluruh Indonesia"
+    },
+    "stats": [
+      { "value": "2,500+", "label": "Pasangan Terdaftar" },
+      { "value": "Rp 15M+", "label": "Budget Terkelola" },
+      { "value": "500+", "label": "Vendor Terhubung" }
+    ]
+  },
+  "socialProofBar": {
+    "title": "Telah diliput oleh media dan partner terpercaya",
+    "logos": [
+      { "name": "Bridestory", "abbr": "BS" },
+      { "name": "WeddingKu", "abbr": "WK" },
+      { "name": "The Bride Dept", "abbr": "BD" },
+      { "name": "Rumah Pernikahan", "abbr": "RP" },
+      { "name": "Vendor Nikah", "abbr": "VN" }
+    ]
+  },
+  "features": {
+    "badge": "Fitur Lengkap",
+    "headline": "Semua yang Kamu Butuhkan untuk Hari Istimewamu",
+    "subheadline": "Dari perencanaan awal hingga hari H, NIKAHKU membantu setiap langkahmu.",
+    "items": [
+      {
+        "icon": "Wallet",
+        "title": "Manajemen Budget",
+        "description": "Atur anggaran pernikahan dengan alokasi otomatis, tracking pengeluaran real-time, dan visualisasi yang jelas.",
+        "highlights": ["Alokasi otomatis", "Tracking real-time", "Laporan visual"]
+      },
+      {
+        "icon": "Store",
+        "title": "Manajemen Vendor",
+        "description": "Temukan, bandingkan, dan kelola semua vendor pernikahan — dari katering, dekorasi, hingga fotografer.",
+        "highlights": ["Bandingkan vendor", "Track pembayaran", "Pipeline status"]
+      },
+      {
+        "icon": "Users",
+        "title": "Daftar Tamu",
+        "description": "Kelola undangan tamu dengan mudah, termasuk RSVP tracking, pengelompokan, dan jumlah kursi.",
+        "highlights": ["RSVP tracking", "Pengelompokan tamu", "Export daftar"]
+      },
+      {
+        "icon": "Gift",
+        "title": "Seserahan Tracker",
+        "description": "Catat dan kelola seserahan dengan detail — dari hantaran hingga mahar, lengkap dengan status pembelian.",
+        "highlights": ["Tracking item", "Status pembelian", "Estimasi budget"]
+      },
+      {
+        "icon": "ClipboardCheck",
+        "title": "Planning Checklist",
+        "description": "Pantau progres persiapan dengan Kanban board interaktif dan checklist timeline yang terstruktur.",
+        "highlights": ["Kanban board", "Timeline", "Filter prioritas"]
+      },
+      {
+        "icon": "Heart",
+        "title": "Kolaborasi Pasangan",
+        "description": "Undang pasanganmu untuk merencanakan bersama. Satu akun, dua pengelola, satu pernikahan sempurna.",
+        "highlights": ["Undang pasangan", "Akses bersama", "Sinkronisasi data"]
+      }
+    ]
+  },
+  "howItWorks": {
+    "badge": "Cara Kerja",
+    "headline": "3 Langkah Menuju Pernikahan Impian",
+    "subheadline": "Mulai dalam hitungan menit, bukan minggu.",
+    "steps": [
+      {
+        "number": "01",
+        "title": "Buat Akun & Isi Detail",
+        "description": "Daftar gratis, isi tanggal pernikahan dan informasi dasar. Sistem kami akan menyesuaikan template untukmu."
+      },
+      {
+        "number": "02",
+        "title": "Atur Budget & Pilih Vendor",
+        "description": "Tetapkan anggaran totalmu, alokasikan ke setiap kategori, dan mulai cari vendor yang sesuai."
+      },
+      {
+        "number": "03",
+        "title": "Pantau & Nikmati Prosesnya",
+        "description": "Gunakan checklist dan dashboard untuk memantau semua progres. Fokus menikmati momen spesialmu."
+      }
+    ]
+  },
+  "pricing": {
+    "badge": "Harga",
+    "headline": "Pilih Paket yang Tepat Untukmu",
+    "subheadline": "Mulai gratis, upgrade kapan saja sesuai kebutuhanmu.",
+    "plans": [
+      {
+        "name": "Gratis",
+        "price": "Rp 0",
+        "period": "selamanya",
+        "description": "Sempurna untuk memulai perencanaan pernikahan.",
+        "features": [
+          "Manajemen budget dasar",
+          "Hingga 100 tamu undangan",
+          "3 kategori vendor",
+          "Checklist planning standar",
+          "Seserahan tracker",
+          "Kolaborasi pasangan"
+        ],
+        "cta": {
+          "label": "Mulai Gratis",
+          "href": "/register"
+        }
+      },
+      {
+        "name": "Premium",
+        "price": "Rp 99K",
+        "period": "/bulan",
+        "description": "Untuk perencanaan pernikahan yang lebih lengkap.",
+        "features": [
+          "Semua fitur Gratis",
+          "Tamu undangan unlimited",
+          "Vendor unlimited + perbandingan",
+          "Laporan budget detail & export",
+          "Priority support",
+          "Custom checklist template",
+          "Multi-event support"
+        ],
+        "cta": {
+          "label": "Coba Premium",
+          "href": "/register"
+        },
+        "highlighted": true,
+        "badge": "Populer"
+      }
+    ]
+  },
+  "testimonials": {
+    "badge": "Testimoni",
+    "headline": "Cerita dari Pasangan Bahagia",
+    "subheadline": "Mereka sudah merencanakan pernikahan impian dengan NIKAHKU.",
+    "items": [
+      {
+        "name": "Rina & Andi",
+        "location": "Jakarta",
+        "text": "NIKAHKU sangat membantu kami mengatur budget pernikahan. Dari yang awalnya bingung, sekarang semua pengeluaran tercatat rapi dan transparan.",
+        "rating": 5
+      },
+      {
+        "name": "Sari & Budi",
+        "location": "Bandung",
+        "text": "Fitur perbandingan vendor-nya luar biasa! Kami bisa bandingkan harga dan review sebelum memutuskan. Sangat menghemat waktu.",
+        "rating": 5
+      },
+      {
+        "name": "Dina & Fajar",
+        "location": "Surabaya",
+        "text": "Checklist planning-nya bikin kami tenang. Semua to-do terorganisir dengan timeline yang jelas. Recommended banget!",
+        "rating": 5
+      }
+    ]
+  },
+  "faq": {
+    "badge": "FAQ",
+    "headline": "Pertanyaan yang Sering Diajukan",
+    "items": [
+      {
+        "question": "Apakah NIKAHKU gratis?",
+        "answer": "Ya! NIKAHKU sepenuhnya gratis untuk digunakan. Kami percaya setiap pasangan berhak mendapatkan perencanaan pernikahan yang terorganisir."
+      },
+      {
+        "question": "Bagaimana cara mengundang pasangan?",
+        "answer": "Setelah membuat akun, kamu bisa mengundang pasanganmu melalui fitur 'Undang Pasangan' di dashboard. Cukup masukkan email pasanganmu."
+      },
+      {
+        "question": "Apakah data saya aman?",
+        "answer": "Tentu! Kami menggunakan Supabase dengan enkripsi end-to-end untuk menjaga keamanan data pribadimu. Privasi adalah prioritas kami."
+      },
+      {
+        "question": "Bisa diakses dari HP?",
+        "answer": "NIKAHKU adalah PWA (Progressive Web App) yang bisa diakses dari browser manapun dan di-install layaknya aplikasi native di HP-mu."
+      },
+      {
+        "question": "Apakah bisa export data tamu?",
+        "answer": "Ya, kamu bisa mengexport daftar tamu dalam format yang mudah digunakan untuk kebutuhan cetak undangan atau koordinasi venue."
+      },
+      {
+        "question": "Apa perbedaan paket Gratis dan Premium?",
+        "answer": "Paket Gratis sudah mencakup semua fitur dasar. Premium memberikan akses unlimited untuk tamu dan vendor, laporan detail, export data, dan priority support."
+      }
+    ]
+  },
+  "contact": {
+    "badge": "Hubungi Kami",
+    "headline": "Ada Pertanyaan? Kami Siap Membantu",
+    "subheadline": "Tim kami siap membantu kamu merencanakan pernikahan impian.",
+    "channels": [
+      {
+        "icon": "Mail",
+        "label": "Email",
+        "value": "hello@nikahku.app",
+        "href": "mailto:hello@nikahku.app"
+      },
+      {
+        "icon": "MessageCircle",
+        "label": "WhatsApp",
+        "value": "+62 812-3456-7890",
+        "href": "https://wa.me/6281234567890"
+      },
+      {
+        "icon": "Instagram",
+        "label": "Instagram",
+        "value": "@nikahku.app",
+        "href": "https://instagram.com/nikahku.app"
+      }
+    ]
+  },
+  "finalCta": {
+    "headline": "Siap Merencanakan Pernikahan Impianmu?",
+    "subheadline": "Bergabung dengan ribuan pasangan yang sudah mempercayakan perencanaan pernikahan mereka kepada NIKAHKU.",
+    "cta": {
+      "label": "Mulai Sekarang — Gratis!",
+      "href": "/register"
+    },
+    "note": "Tidak perlu kartu kredit. Gratis selamanya."
+  },
+  "pwaInstall": {
+    "title": "Install NIKAHKU",
+    "description": "Install aplikasi untuk pengalaman terbaik",
+    "cta": "Install Aplikasi",
+    "dismiss": "Nanti saja"
+  },
+  "footer": {
+    "brand": "NIKAHKU",
+    "tagline": "Platform perencanaan pernikahan yang membantu pasangan Indonesia mewujudkan hari istimewa mereka.",
+    "links": [
+      {
+        "group": "Platform",
+        "items": [
+          { "label": "Fitur", "href": "#fitur" },
+          { "label": "Cara Kerja", "href": "#cara-kerja" },
+          { "label": "Harga", "href": "#harga" },
+          { "label": "FAQ", "href": "#faq" }
+        ]
+      },
+      {
+        "group": "Akun",
+        "items": [
+          { "label": "Masuk", "href": "/login" },
+          { "label": "Daftar", "href": "/register" },
+          { "label": "Dashboard", "href": "/dashboard" }
+        ]
+      },
+      {
+        "group": "Kontak",
+        "items": [
+          { "label": "Email", "href": "mailto:hello@nikahku.app" },
+          { "label": "WhatsApp", "href": "https://wa.me/6281234567890" },
+          { "label": "Instagram", "href": "https://instagram.com/nikahku.app" }
+        ]
+      }
+    ],
+    "copyright": "© 2026 NIKAHKU. Dibuat dengan cinta untuk pasangan Indonesia."
+  }
+}

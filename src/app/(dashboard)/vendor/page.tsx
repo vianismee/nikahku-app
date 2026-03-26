@@ -10,6 +10,7 @@ import { VendorListTable } from "@/components/vendor/vendor-list-table";
 import { VendorFilters } from "@/components/vendor/vendor-filters";
 import { VendorFormSheet } from "@/components/vendor/vendor-form-sheet";
 import { VendorCategoryDialog } from "@/components/vendor/vendor-category-dialog";
+import { VendorCompareBar } from "@/components/vendor/vendor-compare-bar";
 import { useWedding } from "@/lib/hooks/use-wedding";
 import { useVendors } from "@/lib/hooks/use-vendors";
 import { useUIStore } from "@/lib/stores/ui-store";
@@ -132,6 +133,8 @@ export default function VendorPage() {
         open={formOpen}
         onOpenChange={setFormOpen}
       />
+
+      <VendorCompareBar />
     </div>
   );
 }

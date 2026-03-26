@@ -38,7 +38,7 @@ export default function DashboardPage() {
     return (
       <div className="space-y-6">
         <Skeleton className="h-10 w-64" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <Skeleton key={i} className="h-28" />
           ))}
@@ -91,25 +91,25 @@ export default function DashboardPage() {
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Hari Pernikahan</p>
-            <p className="text-3xl font-heading font-bold text-primary font-number mt-1">
+          <CardContent className="pt-4 pb-4 sm:pt-6 sm:pb-6">
+            <p className="text-xs sm:text-sm text-muted-foreground">Hari Pernikahan</p>
+            <p className="text-xl sm:text-2xl lg:text-3xl font-heading font-bold text-primary font-number mt-0.5 sm:mt-1">
               {countdown > 0 ? countdown : countdown === 0 ? "Hari ini!" : "Sudah lewat"}
             </p>
             {countdown > 0 && (
-              <p className="text-xs text-muted-foreground mt-1">hari lagi</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">hari lagi</p>
             )}
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Total Budget</p>
-            <p className="text-3xl font-heading font-bold font-number mt-1">
+          <CardContent className="pt-4 pb-4 sm:pt-6 sm:pb-6">
+            <p className="text-xs sm:text-sm text-muted-foreground">Total Budget</p>
+            <p className="text-xl sm:text-2xl lg:text-3xl font-heading font-bold font-number mt-0.5 sm:mt-1 truncate">
               {totalBudget > 0 ? formatRupiah(totalBudget) : "Rp --"}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 truncate">
               {totalBudget > 0
                 ? `Terpakai ${formatRupiah(budget?.spent_amount ?? 0)}`
                 : "belum diatur"}
@@ -117,21 +117,21 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Vendor Booked</p>
-            <p className="text-3xl font-heading font-bold font-number mt-1">
+          <CardContent className="pt-4 pb-4 sm:pt-6 sm:pb-6">
+            <p className="text-xs sm:text-sm text-muted-foreground">Vendor Booked</p>
+            <p className="text-xl sm:text-2xl lg:text-3xl font-heading font-bold font-number mt-0.5 sm:mt-1">
               {bookedVendors}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">dari {totalVendors} vendor</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">dari {totalVendors} vendor</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Tamu Undangan</p>
-            <p className="text-3xl font-heading font-bold font-number mt-1">
+          <CardContent className="pt-4 pb-4 sm:pt-6 sm:pb-6">
+            <p className="text-xs sm:text-sm text-muted-foreground">Tamu Undangan</p>
+            <p className="text-xl sm:text-2xl lg:text-3xl font-heading font-bold font-number mt-0.5 sm:mt-1">
               {totalGuests}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">{confirmedGuests} konfirmasi hadir</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">{confirmedGuests} konfirmasi hadir</p>
           </CardContent>
         </Card>
       </div>

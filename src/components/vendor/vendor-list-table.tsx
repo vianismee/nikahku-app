@@ -2,12 +2,15 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { DataTable, type Column } from "@/components/shared/data-table";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { VENDOR_STATUSES } from "@/lib/constants/vendor-statuses";
 import { formatRupiah } from "@/lib/utils/format-currency";
 import { useDeleteVendor } from "@/lib/hooks/use-vendors";
+import { useUIStore } from "@/lib/stores/ui-store";
 import { Eye, Trash2, Star } from "lucide-react";
 import type { VendorWithRelations } from "@/lib/hooks/use-vendors";
 import { toast } from "sonner";
@@ -16,6 +19,53 @@ type VendorRow = VendorWithRelations & Record<string, unknown>;
 
 interface VendorListTableProps {
   vendors: VendorWithRelations[];
+}
+
+function CompareCheckbox({ vendor }: { vendor: VendorWithRelations }) {
+  const {
+    vendorCompareIds,
+    vendorCompareCategoryId,
+    addVendorCompare,
+    removeVendorCompare,
+  } = useUIStore();
+
+  const isComparing = vendorCompareIds.includes(vendor.id);
+  const isDifferentCategory =
+    vendorCompareCategoryId !== null &&
+    vendor.category_id !== vendorCompareCategoryId;
+  const isMaxReached = vendorCompareIds.length >= 4 && !isComparing;
+  const isDisabled = isDifferentCategory || isMaxReached;
+
+  const tooltipText = isDifferentCategory
+    ? "Hanya bisa membandingkan vendor dengan kategori yang sama"
+    : isMaxReached
+      ? "Maksimal 4 vendor"
+      : "";
+
+  const checkbox = (
+    <Checkbox
+      checked={isComparing}
+      disabled={isDisabled}
+      onCheckedChange={(checked) => {
+        if (checked) addVendorCompare(vendor.id, vendor.category_id);
+        else removeVendorCompare(vendor.id);
+      }}
+      aria-label="Bandingkan"
+    />
+  );
+
+  if (isDisabled && tooltipText) {
+    return (
+      <Tooltip>
+        <TooltipTrigger render={<span className="inline-flex" />}>
+          {checkbox}
+        </TooltipTrigger>
+        <TooltipContent>{tooltipText}</TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  return checkbox;
 }
 
 export function VendorListTable({ vendors }: VendorListTableProps) {
@@ -31,6 +81,12 @@ export function VendorListTable({ vendors }: VendorListTableProps) {
   }
 
   const columns: Column<VendorRow>[] = [
+    {
+      key: "compare",
+      header: "",
+      className: "w-10",
+      render: (item) => <CompareCheckbox vendor={item} />,
+    },
     {
       key: "name",
       header: "Nama",

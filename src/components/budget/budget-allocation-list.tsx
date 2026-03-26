@@ -94,31 +94,29 @@ export function BudgetAllocationList({ weddingId }: BudgetAllocationListProps) {
 
           return (
             <div key={cat.id} className="space-y-2">
-              <div className="flex items-center gap-3">
-                <span className="text-lg">{cat.icon}</span>
-                <span className="text-sm font-medium flex-1">{cat.name}</span>
-                <div className="w-48">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <span className="text-base sm:text-lg shrink-0">{cat.icon}</span>
+                <span className="text-sm font-medium flex-1 min-w-0 truncate">{cat.name}</span>
+                <div className="w-32 sm:w-48 shrink-0">
                   <CurrencyInput
                     value={allocated}
                     onValueChange={(v) => handleChange(cat.id, v)}
                   />
                 </div>
               </div>
-              <div className="ml-9 flex items-center gap-3">
-                <div className="flex-1">
-                  <Progress value={pct} />
-                </div>
-                <span className="text-xs text-muted-foreground font-number whitespace-nowrap">
+              <div className="ml-7 sm:ml-9 space-y-1">
+                <Progress value={pct} />
+                <p className="text-[10px] sm:text-xs text-muted-foreground font-number text-right">
                   {formatRupiah(spent)} / {formatRupiah(allocated)}
-                </span>
+                </p>
               </div>
             </div>
           );
         })}
 
-        <div className="pt-4 border-t flex items-center justify-between">
+        <div className="pt-4 border-t flex flex-col sm:flex-row sm:items-center justify-between gap-1">
           <span className="text-sm font-medium">Total Alokasi</span>
-          <span className={`text-sm font-number font-bold ${overAllocated ? "text-red-500" : ""}`}>
+          <span className={`text-xs sm:text-sm font-number font-bold ${overAllocated ? "text-red-500" : ""}`}>
             {formatRupiah(totalAllocated)} / {formatRupiah(totalBudget)}
           </span>
         </div>

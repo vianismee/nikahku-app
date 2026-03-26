@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { VENDOR_STATUSES } from "@/lib/constants/vendor-statuses";
 import { formatRupiah } from "@/lib/utils/format-currency";
 import { Star, MapPin, ChevronRight } from "lucide-react";
@@ -15,15 +16,50 @@ interface VendorCardProps {
 }
 
 export function VendorCard({ vendor }: VendorCardProps) {
-  const { vendorCompareIds, addVendorCompare, removeVendorCompare } = useUIStore();
+  const {
+    vendorCompareIds,
+    vendorCompareCategoryId,
+    addVendorCompare,
+    removeVendorCompare,
+  } = useUIStore();
   const statusInfo = VENDOR_STATUSES[vendor.status];
   const isComparing = vendorCompareIds.includes(vendor.id);
   const category = vendor.vendor_categories;
   const categoryColor = category?.color ?? "#8B6F4E";
 
+  // Disable checkbox if different category is already selected, or max reached
+  const isDifferentCategory =
+    vendorCompareCategoryId !== null &&
+    vendor.category_id !== vendorCompareCategoryId;
+  const isMaxReached =
+    vendorCompareIds.length >= 4 && !isComparing;
+  const isDisabled = isDifferentCategory || isMaxReached;
+
+  const tooltipText = isDifferentCategory
+    ? "Hanya bisa membandingkan vendor dengan kategori yang sama"
+    : isMaxReached
+      ? "Maksimal 4 vendor"
+      : "";
+
+  const checkbox = (
+    <Checkbox
+      checked={isComparing}
+      disabled={isDisabled}
+      onCheckedChange={(checked) => {
+        if (checked) addVendorCompare(vendor.id, vendor.category_id);
+        else removeVendorCompare(vendor.id);
+      }}
+      aria-label="Bandingkan"
+    />
+  );
+
   return (
     <Link href={`/vendor/${vendor.id}`}>
-      <Card className="group hover:border-primary/40 transition-all overflow-hidden">
+      <Card
+        className={`group hover:border-primary/40 transition-all overflow-hidden ${
+          isComparing ? "ring-2 ring-primary/40 border-primary/40" : ""
+        }`}
+      >
         {/* Category Header */}
         <div
           className="px-4 py-3 flex items-center justify-between"
@@ -48,14 +84,16 @@ export function VendorCard({ vendor }: VendorCardProps) {
               e.stopPropagation();
             }}
           >
-            <Checkbox
-              checked={isComparing}
-              onCheckedChange={(checked) => {
-                if (checked) addVendorCompare(vendor.id);
-                else removeVendorCompare(vendor.id);
-              }}
-              aria-label="Bandingkan"
-            />
+            {isDisabled && tooltipText ? (
+              <Tooltip>
+                <TooltipTrigger render={<span className="inline-flex" />}>
+                  {checkbox}
+                </TooltipTrigger>
+                <TooltipContent>{tooltipText}</TooltipContent>
+              </Tooltip>
+            ) : (
+              checkbox
+            )}
           </div>
         </div>
 
@@ -106,15 +144,15 @@ export function VendorCard({ vendor }: VendorCardProps) {
           <hr className="border-border" />
 
           {/* Footer: Status + Price */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <StatusBadge {...statusInfo} />
-            <div className="text-right">
+            <div className="text-right min-w-0">
               {vendor.price_deal ? (
-                <span className="font-number text-sm font-bold">
+                <span className="font-number text-xs sm:text-sm font-bold truncate block">
                   {formatRupiah(vendor.price_deal)}
                 </span>
               ) : (
-                <span className="text-xs text-muted-foreground italic">Belum ada harga</span>
+                <span className="text-[10px] sm:text-xs text-muted-foreground italic">Belum ada harga</span>
               )}
             </div>
           </div>

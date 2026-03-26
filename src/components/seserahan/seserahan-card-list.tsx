@@ -96,22 +96,24 @@ export function SeserahanCardList({ items, weddingId }: SeserahanCardListProps) 
                 </div>
 
                 {/* Price + Shop */}
-                <div className="flex items-center justify-between text-sm">
-                  <div>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-sm">
+                  <div className="min-w-0">
                     {hasPrice && (
-                      <span className="font-number text-muted-foreground">
+                      <span className="font-number text-xs sm:text-sm text-muted-foreground">
                         {item.price_min === item.price_max
                           ? formatRupiah(item.price_max)
                           : `${formatRupiah(item.price_min)} - ${formatRupiah(item.price_max)}`}
                       </span>
                     )}
                     {item.actual_price && (
-                      <span className="font-number font-medium ml-2">
+                      <span className="font-number text-xs sm:text-sm font-medium ml-1 sm:ml-2">
                         → {formatRupiah(item.actual_price)}
                       </span>
                     )}
                   </div>
-                  <PlatformIcon url={item.shop_url} showLabel />
+                  <div className="shrink-0">
+                    <PlatformIcon url={item.shop_url} showLabel />
+                  </div>
                 </div>
               </CardContent>
             </Card>
