@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, Kanban, List } from "lucide-react";
+import { Search, Kanban, List, GanttChart } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,8 +33,8 @@ const PRIORITY_OPTIONS = [
 ];
 
 interface PlanningFiltersProps {
-  viewMode: "kanban" | "list";
-  onViewModeChange: (mode: "kanban" | "list") => void;
+  viewMode: "kanban" | "list" | "gantt";
+  onViewModeChange: (mode: "kanban" | "list" | "gantt") => void;
 }
 
 export function PlanningFilters({
@@ -108,6 +108,14 @@ export function PlanningFilters({
           aria-label="Tampilan List"
         >
           <List className="h-4 w-4" />
+        </Button>
+        <Button
+          variant={viewMode === "gantt" ? "secondary" : "ghost"}
+          size="icon-sm"
+          onClick={() => onViewModeChange("gantt")}
+          aria-label="Tampilan Gantt"
+        >
+          <GanttChart className="h-4 w-4" />
         </Button>
       </div>
     </div>

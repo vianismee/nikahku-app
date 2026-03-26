@@ -83,7 +83,7 @@ export function KanbanBoard({ tasks, onEditTask }: KanbanBoardProps) {
           <div
             key={column.id}
             className={cn(
-              "rounded-xl border bg-muted/30 p-3 min-h-[200px] transition-colors",
+              "rounded-xl border bg-muted/30 p-3 transition-colors flex flex-col",
               dragOverColumn === column.id && "ring-2 ring-primary/40 bg-primary/5"
             )}
             onDragOver={(e) => {
@@ -97,14 +97,14 @@ export function KanbanBoard({ tasks, onEditTask }: KanbanBoardProps) {
               handleDrop(column.id);
             }}
           >
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-3 shrink-0">
               <h3 className="text-sm font-semibold">{column.title}</h3>
               <span className="text-xs text-muted-foreground bg-muted rounded-full px-2 py-0.5">
                 {columnTasks.length}
               </span>
             </div>
 
-            <div className="space-y-2">
+            <div className="flex-1 overflow-y-auto max-h-[60vh] space-y-2 pr-1 -mr-1 scrollbar-thin">
               {columnTasks.map((task) => (
                 <TaskCard
                   key={task.id}

@@ -4,29 +4,19 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { CheckCircle2, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { TASK_TEMPLATES, calculateDueDate } from "@/lib/constants/task-templates";
 import { toast } from "sonner";
 
-const TEMPLATES = [
-  {
-    id: "simple",
-    name: "Pernikahan Sederhana",
-    description: "30+ checklist item — intimate, budget-friendly",
-    tasks: 32,
-  },
-  {
-    id: "standard",
-    name: "Pernikahan Standard",
-    description: "50+ checklist item — resepsi lengkap",
-    tasks: 54,
-  },
-  {
-    id: "grand",
-    name: "Pernikahan Besar",
-    description: "70+ checklist item — multi-venue, dekorasi mewah",
-    tasks: 72,
-  },
+const TEMPLATE_OPTIONS = [
+  ...TASK_TEMPLATES.map((t) => ({
+    id: t.id,
+    name: t.name,
+    description: t.description,
+    tasks: t.tasks.length,
+  })),
   {
     id: "empty",
     name: "Mulai dari Nol",
@@ -100,12 +90,38 @@ export default function OnboardingTemplatePage() {
           } as never);
       }
 
-      // 3. Clear sessionStorage
+      // 3. Create tasks from template
+      if (wedding && selectedTemplate !== "empty") {
+        const template = TASK_TEMPLATES.find((t) => t.id === selectedTemplate);
+        if (template) {
+          const taskRows = template.tasks.map((t, i) => ({
+            wedding_id: wedding.id,
+            title: t.title,
+            category: t.category,
+            priority: t.priority,
+            status: "todo",
+            column_id: "todo",
+            due_date: calculateDueDate(weddingData.weddingDate, t.monthsBefore),
+            sort_order: i,
+          }));
+
+          // Insert in batches of 50
+          const batchSize = 50;
+          for (let i = 0; i < taskRows.length; i += batchSize) {
+            const batch = taskRows.slice(i, i + batchSize);
+            await supabase.from("tasks").insert(batch as never[]);
+          }
+        }
+      }
+
+      // 4. Clear sessionStorage
       sessionStorage.removeItem("onboarding_wedding");
       sessionStorage.removeItem("onboarding_budget");
       sessionStorage.removeItem("onboarding_template");
 
-      toast.success("Selamat! Pernikahan berhasil dibuat 🎉");
+      const template = TASK_TEMPLATES.find((t) => t.id === selectedTemplate);
+      const taskMsg = template ? ` dengan ${template.tasks.length} task` : "";
+      toast.success(`Selamat! Pernikahan berhasil dibuat${taskMsg} 🎉`);
       router.push("/dashboard");
     } catch (err) {
       console.error("Onboarding error:", err);
@@ -127,7 +143,7 @@ export default function OnboardingTemplatePage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-3">
-            {TEMPLATES.map((template) => (
+            {TEMPLATE_OPTIONS.map((template) => (
               <button
                 key={template.id}
                 type="button"
@@ -145,16 +161,18 @@ export default function OnboardingTemplatePage() {
                       : "text-muted-foreground/30"
                   }`}
                 />
-                <div>
-                  <div className="font-medium">{template.name}</div>
-                  <div className="text-sm text-muted-foreground">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-medium">{template.name}</span>
+                    {template.tasks > 0 && (
+                      <Badge variant="secondary" className="shrink-0 text-xs">
+                        {template.tasks} task
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="text-sm text-muted-foreground mt-0.5">
                     {template.description}
                   </div>
-                  {template.tasks > 0 && (
-                    <div className="mt-1 text-xs font-number text-muted-foreground">
-                      {template.tasks} tasks
-                    </div>
-                  )}
                 </div>
               </button>
             ))}
@@ -169,10 +187,11 @@ export default function OnboardingTemplatePage() {
               Kembali
             </Button>
             <Button
-              className="flex-1"
+              className="flex-1 gap-1.5"
               disabled={!selectedTemplate || loading}
               onClick={handleSubmit}
             >
+              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
               {loading ? "Menyiapkan..." : "Mulai Merencanakan"}
             </Button>
           </div>

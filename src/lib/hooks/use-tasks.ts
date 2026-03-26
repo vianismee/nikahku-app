@@ -82,3 +82,58 @@ export function useDeleteTask() {
     },
   });
 }
+
+export function useBulkCreateTasks() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      weddingId,
+      tasks,
+    }: {
+      weddingId: string;
+      tasks: Omit<InsertTables<"tasks">, "wedding_id">[];
+    }) => {
+      const supabase = createClient();
+      const rows = tasks.map((task, i) => ({
+        ...task,
+        wedding_id: weddingId,
+        sort_order: i,
+      }));
+
+      // Insert in batches of 50 to avoid payload limits
+      const batchSize = 50;
+      for (let i = 0; i < rows.length; i += batchSize) {
+        const batch = rows.slice(i, i + batchSize);
+        const { error } = await supabase
+          .from("tasks")
+          .insert(batch as never[]);
+        if (error) throw error;
+      }
+
+      return { weddingId, count: rows.length };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["tasks", data.weddingId] });
+    },
+  });
+}
+
+export function useDeleteAllTasks() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ weddingId }: { weddingId: string }) => {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("tasks")
+        .delete()
+        .eq("wedding_id", weddingId);
+      if (error) throw error;
+      return { weddingId };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["tasks", data.weddingId] });
+    },
+  });
+}
