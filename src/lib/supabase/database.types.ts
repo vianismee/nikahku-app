@@ -23,6 +23,9 @@ export type Database = {
           status: "planning" | "completed" | "cancelled";
           created_at: string;
           updated_at: string;
+          partner_email: string | null;
+          partner_user_id: string | null;
+          partner_status: "pending" | "accepted" | "rejected" | null;
         };
         Insert: {
           id?: string;
@@ -34,6 +37,9 @@ export type Database = {
           status?: "planning" | "completed" | "cancelled";
           created_at?: string;
           updated_at?: string;
+          partner_email?: string | null;
+          partner_user_id?: string | null;
+          partner_status?: "pending" | "accepted" | "rejected" | null;
         };
         Update: {
           id?: string;
@@ -45,6 +51,9 @@ export type Database = {
           status?: "planning" | "completed" | "cancelled";
           created_at?: string;
           updated_at?: string;
+          partner_email?: string | null;
+          partner_user_id?: string | null;
+          partner_status?: "pending" | "accepted" | "rejected" | null;
         };
       };
       budgets: {

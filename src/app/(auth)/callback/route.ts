@@ -16,7 +16,6 @@ export async function GET(request: Request) {
       } = await supabase.auth.getUser();
 
       if (user) {
-        // If explicit next param provided, use it
         if (next) {
           return NextResponse.redirect(`${origin}${next}`);
         }
@@ -28,12 +27,29 @@ export async function GET(request: Request) {
           .eq("user_id", user.id)
           .single();
 
-        const destination = wedding ? "/dashboard" : "/onboarding";
-        return NextResponse.redirect(`${origin}${destination}`);
+        if (wedding) {
+          return NextResponse.redirect(`${origin}/dashboard`);
+        }
+
+        // Check if user has a pending/accepted partner invite (on weddings table)
+        if (user.email) {
+          const { data: partnerWedding } = await supabase
+            .from("weddings")
+            .select("id, partner_status")
+            .eq("partner_email", user.email)
+            .in("partner_status", ["pending", "accepted"])
+            .single();
+
+          if (partnerWedding) {
+            return NextResponse.redirect(`${origin}/dashboard`);
+          }
+        }
+
+        // No wedding and no invite — go to onboarding
+        return NextResponse.redirect(`${origin}/onboarding`);
       }
     }
   }
 
-  // Auth code error — redirect to login with error
   return NextResponse.redirect(`${origin}/login?error=auth_callback_error`);
 }

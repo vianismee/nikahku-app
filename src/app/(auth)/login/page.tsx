@@ -1,7 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,12 +21,29 @@ function translateAuthError(message: string): string {
 }
 
 export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const supabase = useRef(createClient()).current;
+  const searchParams = useSearchParams();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
+
+  // Show error from OAuth callback redirect
+  useEffect(() => {
+    const error = searchParams.get("error");
+    if (error === "auth_callback_error") {
+      toast.error("Login gagal, silakan coba lagi");
+    }
+  }, [searchParams]);
 
   async function handleEmailLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -40,7 +58,20 @@ export default function LoginPage() {
         return;
       }
 
-      toast.success("Berhasil masuk!");
+      toast.success("Berhasil masuk! Mengalihkan...");
+
+      // Use router-based navigation with timeout fallback for mobile
+      const redirectTimeout = setTimeout(() => {
+        setLoading(false);
+        toast.error("Pengalihan gagal, silakan coba lagi");
+      }, 8000);
+
+      window.addEventListener(
+        "beforeunload",
+        () => clearTimeout(redirectTimeout),
+        { once: true }
+      );
+
       window.location.replace("/dashboard");
     } catch {
       toast.error("Koneksi gagal, periksa internet kamu");

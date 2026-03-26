@@ -1,14 +1,17 @@
 "use client";
 
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Heart, Wallet, Store, Users, ClipboardList, Gift } from "lucide-react";
+import { Heart, Wallet, Store, Users, ClipboardList, Gift, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PendingInviteBanner } from "@/components/shared/pending-invite-banner";
+import { PartnerStatusCard } from "@/components/shared/partner-status-card";
 import { useWedding } from "@/lib/hooks/use-wedding";
 import { useBudget } from "@/lib/hooks/use-budget";
 import { useVendors } from "@/lib/hooks/use-vendors";
 import { useGuests } from "@/lib/hooks/use-guests";
+import { useAuth } from "@/providers/auth-provider";
 import { formatRupiah } from "@/lib/utils/format-currency";
 import { daysUntilWedding } from "@/lib/utils/date-utils";
 
@@ -22,18 +25,14 @@ const QUICK_LINKS = [
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { data: wedding, isLoading: weddingLoading } = useWedding();
+  const { user } = useAuth();
+  const { data: wedding, isLoading: weddingLoading, error: weddingError } = useWedding();
   const weddingId = wedding?.id;
+  const isOwner = wedding?.user_id === user?.id;
   const { data: budget } = useBudget(weddingId);
   const { data: vendors } = useVendors(weddingId);
   const { data: guestsRaw } = useGuests(weddingId);
   const guests = guestsRaw as unknown as { rsvp_status: string }[] | undefined;
-
-  useEffect(() => {
-    if (!weddingLoading && !wedding) {
-      router.push("/onboarding");
-    }
-  }, [weddingLoading, wedding, router]);
 
   if (weddingLoading) {
     return (
@@ -48,7 +47,22 @@ export default function DashboardPage() {
     );
   }
 
-  if (!wedding) return null;
+  // Debug: show error if wedding query failed
+  if (weddingError) {
+    return (
+      <div className="p-4 border border-destructive rounded-lg bg-destructive/10 space-y-2">
+        <p className="font-medium text-destructive">Error loading wedding data:</p>
+        <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(weddingError, null, 2)}</pre>
+      </div>
+    );
+  }
+
+  // No wedding found — show pending invites or redirect to onboarding
+  if (!wedding) {
+    return (
+      <NoWeddingView onCreateNew={() => router.push("/onboarding")} />
+    );
+  }
 
   const countdown = daysUntilWedding(wedding.wedding_date);
   const totalBudget = budget?.total_amount ?? 0;
@@ -59,12 +73,18 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      {/* Pending Invite Banner (for users who were invited) */}
+      <PendingInviteBanner />
+
       {/* Welcome Section */}
-      <div className="space-y-1">
-        <h1 className="text-2xl font-heading font-bold flex items-center gap-2">
-          <Heart className="h-6 w-6 text-primary fill-primary" />
-          {wedding.partner_1_name} & {wedding.partner_2_name}
-        </h1>
+      <div className="space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h1 className="text-2xl font-heading font-bold flex items-center gap-2">
+            <Heart className="h-6 w-6 text-primary fill-primary" />
+            {wedding.partner_1_name} & {wedding.partner_2_name}
+          </h1>
+          <PartnerStatusCard weddingId={weddingId!} isOwner={isOwner} />
+        </div>
         <p className="text-muted-foreground">
           Merencanakan pernikahan impian kalian
         </p>
@@ -136,6 +156,30 @@ export default function DashboardPage() {
             </a>
           ))}
         </div>
+      </div>
+    </div>
+  );
+}
+
+/** Shown when the user has no wedding — either accept a pending invite or create new */
+function NoWeddingView({ onCreateNew }: { onCreateNew: () => void }) {
+  return (
+    <div className="space-y-6">
+      {/* Pending invites from partner */}
+      <PendingInviteBanner />
+
+      <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+        <div className="mx-auto w-14 h-14 rounded-full border-2 border-muted flex items-center justify-center mb-4">
+          <Heart className="h-7 w-7 text-muted-foreground" />
+        </div>
+        <h3 className="text-lg font-heading font-semibold mb-1">Selamat Datang di NIKAHKU</h3>
+        <p className="text-sm text-muted-foreground max-w-sm mb-4">
+          Belum ada pernikahan yang terhubung. Buat baru atau terima undangan dari pasangan kamu.
+        </p>
+        <Button onClick={onCreateNew}>
+          <Plus className="h-4 w-4 mr-1" />
+          Buat Pernikahan Baru
+        </Button>
       </div>
     </div>
   );
