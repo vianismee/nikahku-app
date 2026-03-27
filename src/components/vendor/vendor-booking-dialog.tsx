@@ -13,8 +13,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { CurrencyInput } from "@/components/shared/currency-input";
 import { useUpdateVendor } from "@/lib/hooks/use-vendors";
+import { useCreateTask } from "@/lib/hooks/use-tasks";
 import { toast } from "sonner";
 
 interface VendorBookingDialogProps {
@@ -38,15 +40,16 @@ export function VendorBookingDialog({
   const [priceDeal, setPriceDeal] = useState(0);
   const [dpAmount, setDpAmount] = useState(0);
   const [paymentDeadline, setPaymentDeadline] = useState("");
+  const [createTask, setCreateTask] = useState(true);
 
   const updateVendor = useUpdateVendor();
+  const createTaskMutation = useCreateTask();
 
   async function handleSubmit() {
     if (priceDeal <= 0) {
       toast.error("Harga deal wajib diisi");
       return;
     }
-
     if (dpAmount > priceDeal) {
       toast.error("Jumlah DP tidak boleh lebih besar dari harga deal");
       return;
@@ -62,19 +65,37 @@ export function VendorBookingDialog({
         payment_deadline: paymentDeadline || null,
       });
 
-      // NOTE: Tidak membuat expense di sini.
-      // DB trigger `recalculate_budget` sudah otomatis menghitung
-      // vendors.price_deal ke spent_amount saat status = booked.
-      // Expense hanya dibuat saat pembayaran aktual (DP / pelunasan).
+      // Auto-create reminder task if requested
+      if (createTask && paymentDeadline) {
+        try {
+          await createTaskMutation.mutateAsync({
+            wedding_id: weddingId,
+            title: `Pelunasan ${vendorName}`,
+            description: `Deadline pelunasan vendor ${vendorName} (${categoryName})`,
+            category: "vendor",
+            priority: "high",
+            status: "todo",
+            due_date: paymentDeadline,
+            column_id: "todo",
+            sort_order: 0,
+            vendor_id: vendorId,
+          });
+          toast.success(`Vendor di-book & task pelunasan dibuat`);
+        } catch {
+          toast.success("Vendor berhasil di-book");
+          toast.error("Gagal membuat task pengingat");
+        }
+      } else {
+        toast.success("Vendor berhasil di-book");
+      }
 
-      toast.success("Vendor berhasil di-book");
       onOpenChange(false);
     } catch {
       toast.error("Gagal booking vendor");
     }
   }
 
-  const isPending = updateVendor.isPending;
+  const isPending = updateVendor.isPending || createTaskMutation.isPending;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -109,6 +130,25 @@ export function VendorBookingDialog({
               value={paymentDeadline}
               onChange={(e) => setPaymentDeadline(e.target.value)}
             />
+          </div>
+
+          {/* Auto-create task option */}
+          <div className={`flex items-start gap-3 rounded-lg border px-3 py-2.5 transition-colors ${
+            createTask && paymentDeadline ? "border-primary/30 bg-primary/5" : "bg-muted/30"
+          }`}>
+            <Checkbox
+              checked={createTask}
+              onCheckedChange={(v) => setCreateTask(!!v)}
+              className="mt-0.5"
+            />
+            <div>
+              <p className="text-sm font-medium">Buat task pengingat pelunasan</p>
+              <p className="text-xs text-muted-foreground">
+                {paymentDeadline
+                  ? `Task "Pelunasan ${vendorName}" akan ditambahkan ke Planning Board`
+                  : "Isi deadline pelunasan untuk mengaktifkan fitur ini"}
+              </p>
+            </div>
           </div>
         </div>
         <DialogFooter>

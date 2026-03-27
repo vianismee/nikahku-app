@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, Kanban, List, GanttChart } from "lucide-react";
+import { Search, Kanban, List, GanttChart, CalendarDays } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,8 +33,8 @@ const PRIORITY_OPTIONS = [
 ];
 
 interface PlanningFiltersProps {
-  viewMode: "kanban" | "list" | "gantt";
-  onViewModeChange: (mode: "kanban" | "list" | "gantt") => void;
+  viewMode: "kanban" | "list" | "gantt" | "calendar";
+  onViewModeChange: (mode: "kanban" | "list" | "gantt" | "calendar") => void;
 }
 
 export function PlanningFilters({
@@ -116,6 +116,14 @@ export function PlanningFilters({
           aria-label="Tampilan Gantt"
         >
           <GanttChart className="h-4 w-4" />
+        </Button>
+        <Button
+          variant={viewMode === "calendar" ? "secondary" : "ghost"}
+          size="icon-sm"
+          onClick={() => onViewModeChange("calendar")}
+          aria-label="Tampilan Kalender"
+        >
+          <CalendarDays className="h-4 w-4" />
         </Button>
       </div>
     </div>

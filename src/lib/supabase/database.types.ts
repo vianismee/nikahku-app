@@ -572,6 +572,38 @@ export type Database = {
           updated_at?: string;
         };
       };
+      wedding_documents: {
+        Row: {
+          id: string;
+          wedding_id: string;
+          doc_key: string;
+          is_checked: boolean;
+          drive_url: string | null;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          wedding_id: string;
+          doc_key: string;
+          is_checked?: boolean;
+          drive_url?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          wedding_id?: string;
+          doc_key?: string;
+          is_checked?: boolean;
+          drive_url?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
       push_subscriptions: {
         Row: {
           id: string;
@@ -596,6 +628,50 @@ export type Database = {
           keys_p256dh?: string;
           keys_auth?: string;
           created_at?: string;
+        };
+      };
+      rundown_events: {
+        Row: {
+          id: string;
+          wedding_id: string;
+          session: string;
+          start_time: string;
+          end_time: string | null;
+          title: string;
+          description: string | null;
+          pic: string | null;
+          location: string | null;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          wedding_id: string;
+          session: string;
+          start_time: string;
+          end_time?: string | null;
+          title: string;
+          description?: string | null;
+          pic?: string | null;
+          location?: string | null;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          wedding_id?: string;
+          session?: string;
+          start_time?: string;
+          end_time?: string | null;
+          title?: string;
+          description?: string | null;
+          pic?: string | null;
+          location?: string | null;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
         };
       };
     };

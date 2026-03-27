@@ -14,7 +14,9 @@ import { VendorCompareBar } from "@/components/vendor/vendor-compare-bar";
 import { useWedding } from "@/lib/hooks/use-wedding";
 import { useVendors } from "@/lib/hooks/use-vendors";
 import { useUIStore } from "@/lib/stores/ui-store";
-import { Store, Plus, FolderPlus } from "lucide-react";
+import { Store, Plus, FolderPlus, Download } from "lucide-react";
+import { downloadCsv } from "@/lib/utils/export-csv";
+import { VENDOR_STATUSES } from "@/lib/constants/vendor-statuses";
 
 export default function VendorPage() {
   const { data: wedding, isLoading: weddingLoading } = useWedding();
@@ -93,6 +95,27 @@ export default function VendorPage() {
                 </Button>
               }
             />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const headers = ["Nama", "Kategori", "Status", "Harga Deal", "Kota", "Telepon", "WhatsApp", "Rating"];
+                const rows = (vendors ?? []).map((v) => [
+                  v.name,
+                  v.vendor_categories?.name ?? "",
+                  VENDOR_STATUSES[v.status as keyof typeof VENDOR_STATUSES]?.label ?? v.status,
+                  v.price_deal ?? "",
+                  v.city ?? "",
+                  v.contact_phone ?? "",
+                  v.contact_wa ?? "",
+                  v.rating ?? "",
+                ]);
+                downloadCsv("daftar-vendor.csv", headers, rows);
+              }}
+            >
+              <Download className="h-4 w-4 mr-1" />
+              Export
+            </Button>
             <Button size="sm" onClick={() => setFormOpen(true)}>
               <Plus className="h-4 w-4 mr-1" />
               Tambah Vendor

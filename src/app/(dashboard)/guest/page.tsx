@@ -10,28 +10,34 @@ import { GuestFilters } from "@/components/guest/guest-filters";
 import { GuestTable } from "@/components/guest/guest-table";
 import { GuestCardList } from "@/components/guest/guest-card-list";
 import { GuestFormDialog } from "@/components/guest/guest-form-dialog";
+import { SessionManager } from "@/components/guest/session-manager";
+import { GuestImportDialog } from "@/components/guest/guest-import-dialog";
 import { useWedding } from "@/lib/hooks/use-wedding";
-import { useGuests } from "@/lib/hooks/use-guests";
-import { Users, Plus } from "lucide-react";
+import { useGuests, useSessions } from "@/lib/hooks/use-guests";
+import { Users, Plus, Upload } from "lucide-react";
 import type { Tables } from "@/lib/supabase/database.types";
 
-type Guest = Tables<"guests">;
+type GuestWithSessions = Tables<"guests"> & {
+  guest_sessions?: { session_id: string }[];
+};
 
 export default function GuestPage() {
   const { data: wedding, isLoading: weddingLoading } = useWedding();
   const weddingId = wedding?.id;
   const { data: rawGuests, isLoading: guestsLoading } = useGuests(weddingId);
+  const { data: sessions } = useSessions(weddingId);
   const [formOpen, setFormOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("semua");
   const [categoryFilter, setCategoryFilter] = useState("semua");
 
-  const guests = rawGuests as Guest[] | undefined;
+  const guests = rawGuests as GuestWithSessions[] | undefined;
 
   const filtered = useMemo(() => {
-    if (!guests) return [] as Guest[];
-    let result: Guest[] = guests;
+    if (!guests) return [] as GuestWithSessions[];
+    let result: GuestWithSessions[] = guests;
 
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -81,17 +87,24 @@ export default function GuestPage() {
         title="Daftar Tamu"
         description="Kelola daftar tamu dan RSVP pernikahan"
         actions={
-          <Button size="sm" onClick={() => setFormOpen(true)}>
-            <Plus className="h-4 w-4 mr-1" />
-            Tambah Tamu
-          </Button>
+          <div className="flex items-center gap-2 flex-wrap">
+            <SessionManager weddingId={weddingId} guests={guests} />
+            <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
+              <Upload className="h-4 w-4 mr-1.5" />
+              Import CSV
+            </Button>
+            <Button size="sm" onClick={() => setFormOpen(true)}>
+              <Plus className="h-4 w-4 mr-1" />
+              Tambah Tamu
+            </Button>
+          </div>
         }
       />
 
-      <GuestStats guests={guests ?? []} />
+      <GuestStats guests={(guests ?? []) as Tables<"guests">[]} />
 
       <GuestFilters
-        guests={guests ?? []}
+        guests={(guests ?? []) as Tables<"guests">[]}
         search={search}
         onSearchChange={setSearch}
         statusFilter={statusFilter}
@@ -104,7 +117,7 @@ export default function GuestPage() {
         <EmptyState
           icon={Users}
           title="Belum ada tamu"
-          description="Tambahkan tamu untuk mulai mengelola daftar undangan"
+          description="Tambahkan tamu atau import dari file CSV"
           actionLabel="Tambah Tamu"
           onAction={() => setFormOpen(true)}
         />
@@ -116,12 +129,12 @@ export default function GuestPage() {
         <>
           {/* Desktop: Table */}
           <div className="hidden md:block">
-            <GuestTable guests={filtered} weddingId={weddingId} />
+            <GuestTable guests={filtered} weddingId={weddingId} sessions={sessions} />
           </div>
 
           {/* Mobile: Cards */}
           <div className="md:hidden">
-            <GuestCardList guests={filtered} weddingId={weddingId} />
+            <GuestCardList guests={filtered as Tables<"guests">[]} weddingId={weddingId} />
           </div>
         </>
       )}
@@ -130,6 +143,12 @@ export default function GuestPage() {
         weddingId={weddingId}
         open={formOpen}
         onOpenChange={setFormOpen}
+      />
+
+      <GuestImportDialog
+        weddingId={weddingId}
+        open={importOpen}
+        onOpenChange={setImportOpen}
       />
     </div>
   );

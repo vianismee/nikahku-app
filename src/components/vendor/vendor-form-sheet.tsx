@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useVendorCategories, useCreateVendor, useUpdateVendor } from "@/lib/hooks/use-vendors";
+import { normalizePhone } from "@/lib/utils/normalize-phone";
 import type { VendorDetail } from "@/lib/hooks/use-vendors";
 import { Star, Phone, MessageCircle, Mail, AtSign, Globe, MapPin } from "lucide-react";
 import { toast } from "sonner";
@@ -88,8 +89,8 @@ export function VendorFormSheet({ weddingId, vendor, open, onOpenChange }: Vendo
       name,
       category_id: categoryId,
       city: city || null,
-      contact_phone: contactPhone || null,
-      contact_wa: contactWa || null,
+      contact_phone: contactPhone ? normalizePhone(contactPhone) : null,
+      contact_wa: contactWa ? normalizePhone(contactWa) : null,
       email: email || null,
       instagram: instagram || null,
       website: website || null,

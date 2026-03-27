@@ -13,12 +13,15 @@ import { TotalBudgetDialog } from "@/components/budget/total-budget-dialog";
 import { useWedding } from "@/lib/hooks/use-wedding";
 import { useBudget } from "@/lib/hooks/use-budget";
 import { Button } from "@/components/ui/button";
-import { Wallet } from "lucide-react";
+import { Wallet, Download } from "lucide-react";
+import { useExpenses } from "@/lib/hooks/use-budget";
+import { downloadCsv } from "@/lib/utils/export-csv";
 
 export default function BudgetPage() {
   const { data: wedding, isLoading: weddingLoading } = useWedding();
   const weddingId = wedding?.id;
   const { data: budget, isLoading: budgetLoading } = useBudget(weddingId);
+  const { data: expenses } = useExpenses(weddingId);
 
   if (weddingLoading || budgetLoading) {
     return (
@@ -76,6 +79,26 @@ export default function BudgetPage() {
       <PageHeader
         title="Budget"
         description="Kelola anggaran pernikahan"
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              const headers = ["Deskripsi", "Kategori", "Jumlah", "Tanggal", "Catatan"];
+              const rows = (expenses ?? []).map((e) => [
+                e.description,
+                e.category,
+                e.amount,
+                e.expense_date,
+                e.notes ?? "",
+              ]);
+              downloadCsv("daftar-pengeluaran.csv", headers, rows);
+            }}
+          >
+            <Download className="h-4 w-4 mr-1" />
+            Export
+          </Button>
+        }
       />
 
       <Tabs defaultValue="overview">

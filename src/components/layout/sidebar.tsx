@@ -9,15 +9,18 @@ import {
   Gift,
   Users,
   ClipboardList,
+  FileText,
   Settings,
   LogOut,
   Heart,
+  ScrollText,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/providers/auth-provider";
 import { useWedding } from "@/lib/hooks/use-wedding";
+import { useTasks } from "@/lib/hooks/use-tasks";
 import { daysUntilWedding } from "@/lib/utils/date-utils";
 import { logout } from "@/app/actions/auth";
 
@@ -28,6 +31,8 @@ const NAV_ITEMS = [
   { href: "/seserahan", label: "Mahar & Seserahan", icon: Gift },
   { href: "/guest", label: "Tamu", icon: Users },
   { href: "/planning", label: "Planning", icon: ClipboardList },
+  { href: "/rundown", label: "Rundown Acara", icon: ScrollText },
+  { href: "/dokumen", label: "Dokumen KUA", icon: FileText },
 ];
 
 export function Sidebar() {
@@ -35,9 +40,22 @@ export function Sidebar() {
   const { user } = useAuth();
   const { data: wedding } = useWedding();
 
+  const { data: tasks } = useTasks(wedding?.id);
+
   const countdown = wedding?.wedding_date
     ? daysUntilWedding(wedding.wedding_date)
     : null;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const in7Days = new Date(today);
+  in7Days.setDate(today.getDate() + 7);
+  const taskAlertCount = (tasks ?? []).filter((t) => {
+    if (t.status === "done" || t.status === "cancelled") return false;
+    if (!t.due_date) return false;
+    const due = new Date(t.due_date);
+    return due <= in7Days;
+  }).length;
 
   const initials = user?.user_metadata?.full_name
     ? user.user_metadata.full_name
@@ -65,6 +83,10 @@ export function Sidebar() {
         {NAV_ITEMS.map((item) => {
           const isActive =
             pathname === item.href || pathname.startsWith(item.href + "/");
+          const badge =
+            item.href === "/planning" && taskAlertCount > 0
+              ? taskAlertCount
+              : null;
           return (
             <Link
               key={item.href}
@@ -75,8 +97,13 @@ export function Sidebar() {
                   : "text-sidebar-foreground hover:bg-sidebar-accent/50"
               }`}
             >
-              <item.icon className="h-4 w-4" />
-              {item.label}
+              <item.icon className="h-4 w-4 shrink-0" />
+              <span className="flex-1">{item.label}</span>
+              {badge && (
+                <span className="ml-auto min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1">
+                  {badge > 99 ? "99+" : badge}
+                </span>
+              )}
             </Link>
           );
         })}

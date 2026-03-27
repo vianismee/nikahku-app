@@ -13,8 +13,9 @@ import { SeserahanFormDialog } from "@/components/seserahan/seserahan-form-dialo
 import { useWedding } from "@/lib/hooks/use-wedding";
 import { useSeserahan } from "@/lib/hooks/use-seserahan";
 import { useUIStore } from "@/lib/stores/ui-store";
-import { Gift, Plus } from "lucide-react";
-import type { SeserahanCategory } from "@/lib/constants/seserahan-statuses";
+import { Gift, Plus, Download } from "lucide-react";
+import { downloadCsv } from "@/lib/utils/export-csv";
+import { SESERAHAN_CATEGORIES, type SeserahanCategory } from "@/lib/constants/seserahan-statuses";
 
 export default function SeserahanPage() {
   const { data: wedding, isLoading: weddingLoading } = useWedding();
@@ -64,10 +65,32 @@ export default function SeserahanPage() {
         title="Mahar & Seserahan"
         description="Kelola daftar mahar dan seserahan pernikahan"
         actions={
-          <Button size="sm" onClick={() => setFormOpen(true)}>
-            <Plus className="h-4 w-4 mr-1" />
-            Tambah Item
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const headers = ["Nama Item", "Kategori", "Merek", "Harga Min", "Harga Maks", "Status", "Toko"];
+                const rows = (items ?? []).map((i) => [
+                  i.item_name,
+                  SESERAHAN_CATEGORIES[i.category as SeserahanCategory] ?? i.category,
+                  i.brand ?? "",
+                  i.price_min,
+                  i.price_max,
+                  i.purchase_status,
+                  i.shop_url ?? "",
+                ]);
+                downloadCsv("mahar-seserahan.csv", headers, rows);
+              }}
+            >
+              <Download className="h-4 w-4 mr-1" />
+              Export
+            </Button>
+            <Button size="sm" onClick={() => setFormOpen(true)}>
+              <Plus className="h-4 w-4 mr-1" />
+              Tambah Item
+            </Button>
+          </div>
         }
       />
 

@@ -102,3 +102,183 @@ export function useDeleteGuest() {
     },
   });
 }
+
+// ---- Session CRUD ----
+
+export function useCreateSession() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (session: InsertTables<"sessions">) => {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("sessions")
+        .insert(session as never)
+        .select()
+        .single();
+      if (error) throw error;
+      return data as Tables<"sessions">;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["sessions", data.wedding_id] });
+    },
+  });
+}
+
+export function useUpdateSession() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: UpdateTables<"sessions"> & { id: string }) => {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("sessions")
+        .update(updates as never)
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data as Tables<"sessions">;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["sessions", data.wedding_id] });
+    },
+  });
+}
+
+export function useDeleteSession() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, weddingId }: { id: string; weddingId: string }) => {
+      const supabase = createClient();
+      const { error } = await supabase.from("sessions").delete().eq("id", id);
+      if (error) throw error;
+      return { weddingId };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["sessions", data.weddingId] });
+      queryClient.invalidateQueries({ queryKey: ["guests", data.weddingId] });
+    },
+  });
+}
+
+// ---- Guest ↔ Session assignment ----
+
+export function useAssignGuestSession() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      guestId,
+      sessionId,
+      weddingId,
+    }: {
+      guestId: string;
+      sessionId: string;
+      weddingId: string;
+    }) => {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("guest_sessions")
+        .upsert({ guest_id: guestId, session_id: sessionId } as never);
+      if (error) throw error;
+      return { weddingId };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["guests", data.weddingId] });
+    },
+  });
+}
+
+export function useRemoveGuestSession() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      guestId,
+      sessionId,
+      weddingId,
+    }: {
+      guestId: string;
+      sessionId: string;
+      weddingId: string;
+    }) => {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("guest_sessions")
+        .delete()
+        .eq("guest_id", guestId)
+        .eq("session_id", sessionId);
+      if (error) throw error;
+      return { weddingId };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["guests", data.weddingId] });
+    },
+  });
+}
+
+export function useBulkUpdateRsvp() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      ids,
+      rsvp_status,
+      weddingId,
+    }: {
+      ids: string[];
+      rsvp_status: string;
+      weddingId: string;
+    }) => {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("guests")
+        .update({ rsvp_status } as never)
+        .in("id", ids);
+      if (error) throw error;
+      return { weddingId };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["guests", data.weddingId] });
+    },
+  });
+}
+
+export function useSetGuestSessions() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      guestId,
+      sessionIds,
+      weddingId,
+    }: {
+      guestId: string;
+      sessionIds: string[];
+      weddingId: string;
+    }) => {
+      const supabase = createClient();
+      // Delete all existing session assignments for this guest
+      const { error: deleteError } = await supabase
+        .from("guest_sessions")
+        .delete()
+        .eq("guest_id", guestId);
+      if (deleteError) throw deleteError;
+
+      // Insert new ones
+      if (sessionIds.length > 0) {
+        const rows = sessionIds.map((session_id) => ({ guest_id: guestId, session_id }));
+        const { error: insertError } = await supabase
+          .from("guest_sessions")
+          .insert(rows as never[]);
+        if (insertError) throw insertError;
+      }
+      return { weddingId };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["guests", data.weddingId] });
+    },
+  });
+}

@@ -14,16 +14,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useCreateGuest, useUpdateGuest } from "@/lib/hooks/use-guests";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useCreateGuest, useUpdateGuest, useSessions, useSetGuestSessions } from "@/lib/hooks/use-guests";
 import { RSVP_STATUSES, type RsvpStatus } from "@/lib/constants/rsvp-statuses";
+import { normalizePhone } from "@/lib/utils/normalize-phone";
 import type { Tables } from "@/lib/supabase/database.types";
 import { toast } from "sonner";
 
 const CATEGORY_SUGGESTIONS = ["Keluarga", "Teman", "Kantor", "Tetangga"];
 
+type GuestWithSessions = Tables<"guests"> & { guest_sessions?: { session_id: string }[] };
+
 interface GuestFormDialogProps {
   weddingId: string;
-  guest?: Tables<"guests">;
+  guest?: GuestWithSessions;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -38,9 +42,12 @@ export function GuestFormDialog({ weddingId, guest, open, onOpenChange }: GuestF
   const [paxCount, setPaxCount] = useState(1);
   const [rsvpStatus, setRsvpStatus] = useState<RsvpStatus>("belum_diundang");
   const [notes, setNotes] = useState("");
+  const [selectedSessions, setSelectedSessions] = useState<string[]>([]);
 
   const createGuest = useCreateGuest();
   const updateGuest = useUpdateGuest();
+  const setGuestSessions = useSetGuestSessions();
+  const { data: sessions } = useSessions(weddingId);
 
   useEffect(() => {
     if (open && guest) {
@@ -51,6 +58,9 @@ export function GuestFormDialog({ weddingId, guest, open, onOpenChange }: GuestF
       setPaxCount(guest.pax_count);
       setRsvpStatus(guest.rsvp_status);
       setNotes(guest.notes ?? "");
+      setSelectedSessions(
+        guest.guest_sessions?.map((gs) => gs.session_id) ?? []
+      );
     } else if (open) {
       setName("");
       setCategory("");
@@ -59,8 +69,17 @@ export function GuestFormDialog({ weddingId, guest, open, onOpenChange }: GuestF
       setPaxCount(1);
       setRsvpStatus("belum_diundang");
       setNotes("");
+      setSelectedSessions([]);
     }
   }, [open, guest]);
+
+  function toggleSession(sessionId: string) {
+    setSelectedSessions((prev) =>
+      prev.includes(sessionId)
+        ? prev.filter((id) => id !== sessionId)
+        : [...prev, sessionId]
+    );
+  }
 
   async function handleSubmit() {
     if (!name.trim()) {
@@ -71,7 +90,7 @@ export function GuestFormDialog({ weddingId, guest, open, onOpenChange }: GuestF
     const payload = {
       name: name.trim(),
       category: category || "Lainnya",
-      phone: phone || null,
+      phone: phone ? normalizePhone(phone) : null,
       email: email || null,
       pax_count: paxCount,
       rsvp_status: rsvpStatus,
@@ -79,20 +98,34 @@ export function GuestFormDialog({ weddingId, guest, open, onOpenChange }: GuestF
     };
 
     try {
+      let guestId: string;
+
       if (isEdit) {
-        await updateGuest.mutateAsync({ id: guest.id, ...payload });
+        const updated = await updateGuest.mutateAsync({ id: guest.id, ...payload });
+        guestId = updated.id;
         toast.success("Tamu berhasil diperbarui");
       } else {
-        await createGuest.mutateAsync({ ...payload, wedding_id: weddingId });
+        const created = await createGuest.mutateAsync({ ...payload, wedding_id: weddingId });
+        guestId = created.id;
         toast.success("Tamu berhasil ditambahkan");
       }
+
+      // Save session assignments if sessions exist
+      if (sessions && sessions.length > 0) {
+        await setGuestSessions.mutateAsync({
+          guestId,
+          sessionIds: selectedSessions,
+          weddingId,
+        });
+      }
+
       onOpenChange(false);
     } catch {
       toast.error("Gagal menyimpan data tamu");
     }
   }
 
-  const isPending = createGuest.isPending || updateGuest.isPending;
+  const isPending = createGuest.isPending || updateGuest.isPending || setGuestSessions.isPending;
 
   const rsvpItems = Object.entries(RSVP_STATUSES).map(([key, { label }]) => ({
     value: key,
@@ -105,7 +138,7 @@ export function GuestFormDialog({ weddingId, guest, open, onOpenChange }: GuestF
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit Tamu" : "Tambah Tamu"}</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
+        <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
           <div className="space-y-1.5">
             <Label>Nama <span className="text-destructive">*</span></Label>
             <Input
@@ -132,7 +165,7 @@ export function GuestFormDialog({ weddingId, guest, open, onOpenChange }: GuestF
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label>No. Telepon</Label>
+              <Label>No. Telepon / WA</Label>
               <Input
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
@@ -183,6 +216,33 @@ export function GuestFormDialog({ weddingId, guest, open, onOpenChange }: GuestF
               </Select>
             </div>
           </div>
+
+          {/* Session assignment */}
+          {sessions && sessions.length > 0 && (
+            <div className="space-y-2">
+              <Label>Sesi yang Dihadiri</Label>
+              <div className="space-y-2 rounded-lg border p-3">
+                {sessions.map((session) => (
+                  <label
+                    key={session.id}
+                    className="flex items-center gap-2.5 cursor-pointer text-sm"
+                  >
+                    <Checkbox
+                      checked={selectedSessions.includes(session.id)}
+                      onCheckedChange={() => toggleSession(session.id)}
+                    />
+                    <span>{session.name}</span>
+                    {session.time_start && (
+                      <span className="text-xs text-muted-foreground">
+                        {session.time_start}
+                        {session.time_end ? ` – ${session.time_end}` : ""}
+                      </span>
+                    )}
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="space-y-1.5">
             <Label>Catatan</Label>

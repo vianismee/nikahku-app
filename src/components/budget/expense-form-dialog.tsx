@@ -16,19 +16,27 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CurrencyInput } from "@/components/shared/currency-input";
+import { VendorPicker } from "./vendor-picker";
 import { useCreateExpense, useUpdateExpense } from "@/lib/hooks/use-budget";
-import { useVendorCategories, useVendors } from "@/lib/hooks/use-vendors";
+import { useVendors, useVendorCategories } from "@/lib/hooks/use-vendors";
 import type { Tables } from "@/lib/supabase/database.types";
 import { toast } from "sonner";
 
 interface ExpenseFormDialogProps {
   weddingId: string;
   expense?: Tables<"expenses">;
-  trigger: React.ReactNode;
+  trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function ExpenseFormDialog({ weddingId, expense, trigger }: ExpenseFormDialogProps) {
-  const [open, setOpen] = useState(false);
+export function ExpenseFormDialog({ weddingId, expense, trigger, open: controlledOpen, onOpenChange }: ExpenseFormDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setOpen = (v: boolean) => {
+    setInternalOpen(v);
+    onOpenChange?.(v);
+  };
   const [category, setCategory] = useState(expense?.category ?? "");
   const [description, setDescription] = useState(expense?.description ?? "");
   const [amount, setAmount] = useState(expense?.amount ?? 0);
@@ -106,7 +114,7 @@ export function ExpenseFormDialog({ weddingId, expense, trigger }: ExpenseFormDi
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={trigger as React.ReactElement} />
+      {trigger && <DialogTrigger render={trigger as React.ReactElement} />}
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{expense ? "Edit Pengeluaran" : "Tambah Pengeluaran"}</DialogTitle>
@@ -149,26 +157,11 @@ export function ExpenseFormDialog({ weddingId, expense, trigger }: ExpenseFormDi
           </div>
           <div className="space-y-2">
             <Label>Vendor (opsional)</Label>
-            <Select
+            <VendorPicker
+              vendors={vendors ?? []}
               value={vendorId}
-              onValueChange={(v) => setVendorId(v ?? "")}
-              items={[
-                { value: "", label: "Tidak ada" },
-                ...(vendors?.map((v) => ({ value: v.id, label: v.name })) ?? []),
-              ]}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Pilih vendor" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">Tidak ada</SelectItem>
-                {vendors?.map((v) => (
-                  <SelectItem key={v.id} value={v.id}>
-                    {v.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              onValueChange={setVendorId}
+            />
           </div>
           <div className="space-y-2">
             <Label>Catatan</Label>

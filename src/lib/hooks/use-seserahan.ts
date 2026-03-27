@@ -68,6 +68,31 @@ export function useUpdateSeserahan() {
   });
 }
 
+export function useReorderSeserahan() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      weddingId,
+      items,
+    }: {
+      weddingId: string;
+      items: { id: string; sort_order: number }[];
+    }) => {
+      const supabase = createClient();
+      await Promise.all(
+        items.map(({ id, sort_order }) =>
+          supabase.from("seserahan").update({ sort_order } as never).eq("id", id)
+        )
+      );
+      return { weddingId };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["seserahan", data.weddingId] });
+    },
+  });
+}
+
 export function useDeleteSeserahan() {
   const queryClient = useQueryClient();
 

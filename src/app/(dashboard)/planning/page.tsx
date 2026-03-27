@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Plus, ClipboardList, Sparkles, Trash2 } from "lucide-react";
+import { Plus, ClipboardList, Sparkles, Trash2, AlertTriangle, Clock, Download } from "lucide-react";
+import { downloadCsv } from "@/lib/utils/export-csv";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
@@ -14,6 +15,7 @@ import { TaskListView } from "@/components/planning/task-list-view";
 import { TaskFormDialog } from "@/components/planning/task-form-dialog";
 import { TaskTemplateDialog } from "@/components/planning/task-template-dialog";
 import { GanttChart } from "@/components/planning/gantt-chart";
+import { CalendarView } from "@/components/planning/calendar-view";
 import { useWedding } from "@/lib/hooks/use-wedding";
 import { useTasks, useDeleteAllTasks } from "@/lib/hooks/use-tasks";
 import { useKanbanStore } from "@/lib/stores/kanban-store";
@@ -28,7 +30,7 @@ export default function PlanningPage() {
 
   const { searchQuery, filterCategory, filterPriority } = useKanbanStore();
 
-  const [viewMode, setViewMode] = useState<"kanban" | "list" | "gantt">("kanban");
+  const [viewMode, setViewMode] = useState<"kanban" | "list" | "gantt" | "calendar">("kanban");
   const [formOpen, setFormOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Tables<"tasks"> | null>(null);
 
@@ -104,6 +106,27 @@ export default function PlanningPage() {
         description="Kelola checklist pernikahan"
         actions={
           <div className="flex items-center gap-2">
+            {tasks.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const headers = ["Judul", "Kategori", "Prioritas", "Status", "Deadline", "Deskripsi"];
+                  const rows = tasks.map((t) => [
+                    t.title,
+                    t.category ?? "",
+                    t.priority ?? "",
+                    t.status,
+                    t.due_date ?? "",
+                    t.description ?? "",
+                  ]);
+                  downloadCsv("daftar-task.csv", headers, rows);
+                }}
+              >
+                <Download className="h-4 w-4 mr-1.5" />
+                Export
+              </Button>
+            )}
             <TaskTemplateDialog
               weddingId={weddingId}
               hasExistingTasks={tasks.length > 0}
@@ -137,6 +160,50 @@ export default function PlanningPage() {
       />
 
       <PlanningStats tasks={tasks} />
+
+      {/* Reminder banners */}
+      {(() => {
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        const in7 = new Date(now);
+        in7.setDate(now.getDate() + 7);
+        const overdue = tasks.filter(
+          (t) =>
+            t.status !== "done" &&
+            t.status !== "cancelled" &&
+            t.due_date &&
+            new Date(t.due_date) < now
+        );
+        const upcoming = tasks.filter(
+          (t) =>
+            t.status !== "done" &&
+            t.status !== "cancelled" &&
+            t.due_date &&
+            new Date(t.due_date) >= now &&
+            new Date(t.due_date) <= in7
+        );
+        if (overdue.length === 0 && upcoming.length === 0) return null;
+        return (
+          <div className="space-y-2">
+            {overdue.length > 0 && (
+              <div className="flex items-center gap-2.5 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-2.5 text-sm text-destructive">
+                <AlertTriangle className="h-4 w-4 shrink-0" />
+                <span>
+                  <strong>{overdue.length} task</strong> sudah melewati deadline
+                </span>
+              </div>
+            )}
+            {upcoming.length > 0 && (
+              <div className="flex items-center gap-2.5 rounded-lg border border-amber-300/50 bg-amber-50 dark:bg-amber-950/20 px-4 py-2.5 text-sm text-amber-700 dark:text-amber-400">
+                <Clock className="h-4 w-4 shrink-0" />
+                <span>
+                  <strong>{upcoming.length} task</strong> jatuh tempo dalam 7 hari ke depan
+                </span>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       <PlanningFilters viewMode={viewMode} onViewModeChange={setViewMode} />
 
@@ -172,6 +239,8 @@ export default function PlanningPage() {
         <KanbanBoard tasks={filteredTasks} onEditTask={handleEditTask} />
       ) : viewMode === "gantt" ? (
         <GanttChart tasks={filteredTasks} onEditTask={handleEditTask} />
+      ) : viewMode === "calendar" ? (
+        <CalendarView tasks={filteredTasks} onEditTask={handleEditTask} />
       ) : (
         <TaskListView
           tasks={filteredTasks}
