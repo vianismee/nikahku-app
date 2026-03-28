@@ -6,7 +6,7 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { VENDOR_STATUSES } from "@/lib/constants/vendor-statuses";
-import { formatRupiah } from "@/lib/utils/format-currency";
+import { formatRupiah, getVendorPriceInfo } from "@/lib/utils/format-currency";
 import { Star, MapPin, ChevronRight } from "lucide-react";
 import { useUIStore } from "@/lib/stores/ui-store";
 import type { VendorWithRelations } from "@/lib/hooks/use-vendors";
@@ -146,14 +146,33 @@ export function VendorCard({ vendor }: VendorCardProps) {
           {/* Footer: Status + Price */}
           <div className="flex items-center justify-between gap-2">
             <StatusBadge {...statusInfo} />
-            <div className="text-right min-w-0">
-              {vendor.price_deal ? (
-                <span className="font-number text-xs sm:text-sm font-bold truncate block">
-                  {formatRupiah(vendor.price_deal)}
-                </span>
-              ) : (
-                <span className="text-[10px] sm:text-xs text-muted-foreground italic">Belum ada harga</span>
-              )}
+            <div className="shrink-0 text-right min-w-0">
+              {(() => {
+                const info = getVendorPriceInfo(vendor);
+                if (info.type === "deal") {
+                  return (
+                    <span className="font-number text-xs sm:text-sm font-bold whitespace-nowrap text-primary">
+                      {formatRupiah(info.deal)}
+                    </span>
+                  );
+                }
+                if (info.type === "range") {
+                  return info.min === info.max ? (
+                    <span className="font-number text-xs font-semibold whitespace-nowrap">
+                      {formatRupiah(info.min)}
+                    </span>
+                  ) : (
+                    <span className="font-number text-[10px] sm:text-xs whitespace-nowrap text-muted-foreground">
+                      {formatRupiah(info.min)} – {formatRupiah(info.max)}
+                    </span>
+                  );
+                }
+                return (
+                  <span className="text-[10px] sm:text-xs text-muted-foreground italic whitespace-nowrap">
+                    Belum ada harga
+                  </span>
+                );
+              })()}
             </div>
           </div>
 

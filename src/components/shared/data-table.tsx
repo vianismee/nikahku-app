@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { TablePagination } from "@/components/shared/table-pagination";
 import { Search, ChevronUp, ChevronDown } from "lucide-react";
 
 export interface Column<T> {
@@ -29,6 +30,8 @@ interface DataTableProps<T> {
   searchKeys?: string[];
   emptyMessage?: string;
   actions?: React.ReactNode;
+  pageSize?: number;
+  itemLabel?: string;
 }
 
 type SortDirection = "asc" | "desc" | null;
@@ -41,10 +44,13 @@ export function DataTable<T extends Record<string, unknown>>({
   searchKeys = [],
   emptyMessage = "Tidak ada data",
   actions,
+  pageSize = 10,
+  itemLabel = "data",
 }: DataTableProps<T>) {
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<SortDirection>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Filter
   let filtered = data;
@@ -70,7 +76,14 @@ export function DataTable<T extends Record<string, unknown>>({
     });
   }
 
+  // Pagination
+  const totalItems = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const safePage = Math.min(currentPage, totalPages);
+  const paged = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
+
   function handleSort(key: string) {
+    setCurrentPage(1);
     if (sortKey === key) {
       setSortDir(sortDir === "asc" ? "desc" : sortDir === "desc" ? null : "asc");
       if (sortDir === "desc") setSortKey(null);
@@ -90,7 +103,7 @@ export function DataTable<T extends Record<string, unknown>>({
               <Input
                 placeholder={searchPlaceholder}
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
                 className="pl-9"
               />
             </div>
@@ -128,7 +141,7 @@ export function DataTable<T extends Record<string, unknown>>({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.length === 0 ? (
+            {paged.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
@@ -138,7 +151,7 @@ export function DataTable<T extends Record<string, unknown>>({
                 </TableCell>
               </TableRow>
             ) : (
-              filtered.map((item, i) => (
+              paged.map((item, i) => (
                 <TableRow key={(item.id as string) ?? i}>
                   {columns.map((col) => (
                     <TableCell key={col.key} className={col.className}>
@@ -154,9 +167,14 @@ export function DataTable<T extends Record<string, unknown>>({
         </Table>
       </div>
 
-      <div className="text-xs text-muted-foreground">
-        {filtered.length} dari {data.length} data
-      </div>
+      <TablePagination
+        currentPage={safePage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        pageSize={pageSize}
+        onPageChange={setCurrentPage}
+        itemLabel={itemLabel}
+      />
     </div>
   );
 }

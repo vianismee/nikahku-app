@@ -36,3 +36,31 @@ export function formatInputRupiah(value: string): string {
   const number = value.replace(/\D/g, "");
   return number.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
+
+/**
+ * Get vendor price display info based on deal price or package price range.
+ * - If price_deal exists  → { type: "deal",  deal: number }
+ * - If packages exist     → { type: "range", min: number, max: number }
+ * - Otherwise             → { type: "none" }
+ */
+export type VendorPriceInfo =
+  | { type: "deal"; deal: number }
+  | { type: "range"; min: number; max: number }
+  | { type: "none" };
+
+export function getVendorPriceInfo(vendor: {
+  price_deal?: number | null;
+  vendor_packages?: Array<{ price: number }> | null;
+}): VendorPriceInfo {
+  if (vendor.price_deal) {
+    return { type: "deal", deal: vendor.price_deal };
+  }
+  const prices = (vendor.vendor_packages ?? [])
+    .map((p) => p.price)
+    .filter((p) => p > 0)
+    .sort((a, b) => a - b);
+  if (prices.length > 0) {
+    return { type: "range", min: prices[0], max: prices[prices.length - 1] };
+  }
+  return { type: "none" };
+}

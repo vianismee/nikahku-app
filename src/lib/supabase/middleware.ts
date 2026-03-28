@@ -123,7 +123,8 @@ export async function updateSession(request: NextRequest) {
   const isPublic =
     publicRoutes.includes(pathname) ||
     pathname.startsWith("/callback") ||
-    pathname.startsWith("/rsvp");
+    pathname.startsWith("/rsvp") ||
+    pathname.startsWith("/share");
 
   if (!user && !isGuestOnly && !isPublic) {
     const url = request.nextUrl.clone();

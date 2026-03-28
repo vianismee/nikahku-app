@@ -6,11 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { TablePagination } from "@/components/shared/table-pagination";
 import { useDeleteTask } from "@/lib/hooks/use-tasks";
 import { isOverdue, formatDateShort } from "@/lib/utils/date-utils";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import type { Tables } from "@/lib/supabase/database.types";
+
+const GROUP_PAGE_SIZE = 10;
 
 const PRIORITIES: Record<
   string,
@@ -56,9 +59,8 @@ export function TaskListView({
   onEditTask,
 }: TaskListViewProps) {
   const deleteTask = useDeleteTask();
-  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(
-    new Set()
-  );
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+  const [groupPages, setGroupPages] = useState<Record<string, number>>({});
 
   const grouped = useMemo(() => {
     const map: Record<string, Tables<"tasks">[]> = {};
@@ -85,6 +87,10 @@ export function TaskListView({
     });
   };
 
+  const setGroupPage = (status: string, page: number) => {
+    setGroupPages((prev) => ({ ...prev, [status]: page }));
+  };
+
   const handleDelete = (taskId: string) => {
     deleteTask.mutate(
       { id: taskId, weddingId },
@@ -101,6 +107,13 @@ export function TaskListView({
         const statusTasks = grouped[status] ?? [];
         const config = STATUS_CONFIG[status];
         const isCollapsed = collapsedGroups.has(status);
+        const groupPage = groupPages[status] ?? 1;
+        const groupTotalPages = Math.max(1, Math.ceil(statusTasks.length / GROUP_PAGE_SIZE));
+        const safeGroupPage = Math.min(groupPage, groupTotalPages);
+        const pagedGroupTasks = statusTasks.slice(
+          (safeGroupPage - 1) * GROUP_PAGE_SIZE,
+          safeGroupPage * GROUP_PAGE_SIZE
+        );
 
         return (
           <div key={status} className="rounded-xl border">
@@ -126,7 +139,7 @@ export function TaskListView({
 
             {!isCollapsed && statusTasks.length > 0 && (
               <div className="border-t divide-y">
-                {statusTasks.map((task) => {
+                {pagedGroupTasks.map((task) => {
                   const priority =
                     PRIORITIES[task.priority] ?? PRIORITIES.medium;
                   const taskOverdue =
@@ -198,6 +211,19 @@ export function TaskListView({
                     </div>
                   );
                 })}
+              </div>
+            )}
+
+            {!isCollapsed && statusTasks.length > 0 && groupTotalPages > 1 && (
+              <div className="border-t px-3 py-2">
+                <TablePagination
+                  currentPage={safeGroupPage}
+                  totalPages={groupTotalPages}
+                  totalItems={statusTasks.length}
+                  pageSize={GROUP_PAGE_SIZE}
+                  onPageChange={(page) => setGroupPage(status, page)}
+                  itemLabel="task"
+                />
               </div>
             )}
 

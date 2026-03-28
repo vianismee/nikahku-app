@@ -1,7 +1,8 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Bell, Plus } from "lucide-react";
+import Link from "next/link";
+import { Bell, Plus, Home } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { useAuth } from "@/providers/auth-provider";
 import { logout } from "@/app/actions/auth";
 
@@ -53,6 +55,16 @@ export function Header() {
         <Button variant="outline" size="icon" className="h-8 w-8">
           <Plus className="h-4 w-4" />
         </Button>
+
+        {/* Landing page link */}
+        <Link href="/">
+          <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Ke Landing Page">
+            <Home className="h-4 w-4" />
+          </Button>
+        </Link>
+
+        {/* Theme toggle */}
+        <ThemeToggle size="sm" />
 
         {/* Notifications */}
         <Button variant="ghost" size="icon" className="h-8 w-8 relative">

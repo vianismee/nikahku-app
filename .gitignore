@@ -46,3 +46,6 @@ public/swe-worker-*.js.map
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# file
+/example-price-list

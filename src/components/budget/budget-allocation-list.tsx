@@ -106,7 +106,7 @@ export function BudgetAllocationList({ weddingId }: BudgetAllocationListProps) {
               </div>
               <div className="ml-7 sm:ml-9 space-y-1">
                 <Progress value={pct} />
-                <p className="text-[10px] sm:text-xs text-muted-foreground font-number text-right">
+                <p className="text-[10px] sm:text-xs text-muted-foreground font-number text-right whitespace-nowrap">
                   {formatRupiah(spent)} / {formatRupiah(allocated)}
                 </p>
               </div>
@@ -116,7 +116,7 @@ export function BudgetAllocationList({ weddingId }: BudgetAllocationListProps) {
 
         <div className="pt-4 border-t flex flex-col sm:flex-row sm:items-center justify-between gap-1">
           <span className="text-sm font-medium">Total Alokasi</span>
-          <span className={`text-xs sm:text-sm font-number font-bold ${overAllocated ? "text-red-500" : ""}`}>
+          <span className={`text-xs sm:text-sm font-number font-bold whitespace-nowrap shrink-0 ${overAllocated ? "text-red-500" : ""}`}>
             {formatRupiah(totalAllocated)} / {formatRupiah(totalBudget)}
           </span>
         </div>

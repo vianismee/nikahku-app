@@ -167,6 +167,8 @@ export type Database = {
           dp_paid_date: string | null;
           full_paid_date: string | null;
           payment_deadline: string | null;
+          estimated_additionals: Json | null;
+          estimate_share_token: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -202,6 +204,8 @@ export type Database = {
           dp_paid_date?: string | null;
           full_paid_date?: string | null;
           payment_deadline?: string | null;
+          estimated_additionals?: Json | null;
+          estimate_share_token?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -237,8 +241,42 @@ export type Database = {
           dp_paid_date?: string | null;
           full_paid_date?: string | null;
           payment_deadline?: string | null;
+          estimated_additionals?: Json | null;
+          estimate_share_token?: string | null;
           created_at?: string;
           updated_at?: string;
+        };
+      };
+      vendor_additionals: {
+        Row: {
+          id: string;
+          vendor_id: string;
+          name: string;
+          description: string | null;
+          price: number;
+          unit: string;
+          sort_order: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          vendor_id: string;
+          name: string;
+          description?: string | null;
+          price: number;
+          unit?: string;
+          sort_order?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          vendor_id?: string;
+          name?: string;
+          description?: string | null;
+          price?: number;
+          unit?: string;
+          sort_order?: number;
+          created_at?: string;
         };
       };
       vendor_packages: {
@@ -688,3 +726,23 @@ export type InsertTables<T extends keyof Database["public"]["Tables"]> =
   Database["public"]["Tables"][T]["Insert"];
 export type UpdateTables<T extends keyof Database["public"]["Tables"]> =
   Database["public"]["Tables"][T]["Update"];
+
+// Estimated additionals types
+export type EstimatedAdditionalItem = {
+  id: string;
+  name: string;
+  price: number;
+  unit: string;
+  qty: number;
+  subtotal: number;
+};
+
+export type EstimatedAdditionals = {
+  package_id: string | null;
+  package_name: string | null;
+  package_price: number;
+  items: EstimatedAdditionalItem[];
+  additionals_total: number;
+  grand_total: number;
+  saved_at: string;
+};

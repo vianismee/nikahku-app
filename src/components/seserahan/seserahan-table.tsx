@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/u
 import { StatusBadge } from "@/components/shared/status-badge";
 import { PlatformIcon } from "@/components/shared/platform-icon";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { TablePagination } from "@/components/shared/table-pagination";
 import { PurchaseStatusToggle } from "./purchase-status-toggle";
 import { SeserahanFormDialog } from "./seserahan-form-dialog";
 import { useUpdateSeserahan, useDeleteSeserahan, useReorderSeserahan } from "@/lib/hooks/use-seserahan";
@@ -21,6 +22,8 @@ import { GripVertical, Pencil, Trash2 } from "lucide-react";
 import type { Tables } from "@/lib/supabase/database.types";
 import { toast } from "sonner";
 
+const PAGE_SIZE = 10;
+
 interface SeserahanTableProps {
   items: Tables<"seserahan">[];
   weddingId: string;
@@ -33,6 +36,7 @@ export function SeserahanTable({ items, weddingId }: SeserahanTableProps) {
 
   const [editItem, setEditItem] = useState<Tables<"seserahan"> | undefined>();
   const [editOpen, setEditOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Inline editing state
   const [inlineEditId, setInlineEditId] = useState<string | null>(null);
@@ -137,6 +141,10 @@ export function SeserahanTable({ items, weddingId }: SeserahanTableProps) {
     setDragOverId(null);
   }, []);
 
+  const totalPages = Math.max(1, Math.ceil(localItems.length / PAGE_SIZE));
+  const safePage = Math.min(currentPage, totalPages);
+  const pagedItems = localItems.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
   return (
     <>
       <div className="rounded-lg border overflow-hidden">
@@ -156,7 +164,7 @@ export function SeserahanTable({ items, weddingId }: SeserahanTableProps) {
               </tr>
             </thead>
             <tbody>
-              {localItems.map((item) => (
+              {pagedItems.map((item) => (
                 <tr
                   key={item.id}
                   draggable
@@ -292,7 +300,7 @@ export function SeserahanTable({ items, weddingId }: SeserahanTableProps) {
                 </tr>
               ))}
 
-              {localItems.length === 0 && (
+              {pagedItems.length === 0 && (
                 <tr>
                   <td colSpan={9} className="px-3 py-8 text-center text-sm text-muted-foreground">
                     Tidak ada item
@@ -303,6 +311,15 @@ export function SeserahanTable({ items, weddingId }: SeserahanTableProps) {
           </table>
         </div>
       </div>
+
+      <TablePagination
+        currentPage={safePage}
+        totalPages={totalPages}
+        totalItems={localItems.length}
+        pageSize={PAGE_SIZE}
+        onPageChange={setCurrentPage}
+        itemLabel="item"
+      />
 
       <SeserahanFormDialog
         weddingId={weddingId}

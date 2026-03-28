@@ -8,7 +8,7 @@ import { DataTable, type Column } from "@/components/shared/data-table";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { VENDOR_STATUSES } from "@/lib/constants/vendor-statuses";
-import { formatRupiah } from "@/lib/utils/format-currency";
+import { formatRupiah, getVendorPriceInfo } from "@/lib/utils/format-currency";
 import { useDeleteVendor } from "@/lib/hooks/use-vendors";
 import { useUIStore } from "@/lib/stores/ui-store";
 import { Eye, Trash2, Star } from "lucide-react";
@@ -119,11 +119,28 @@ export function VendorListTable({ vendors }: VendorListTableProps) {
       key: "price_deal",
       header: "Harga",
       sortable: true,
-      render: (item) => (
-        <span className="font-number">
-          {item.price_deal ? formatRupiah(item.price_deal) : "-"}
-        </span>
-      ),
+      render: (item) => {
+        const info = getVendorPriceInfo(item);
+        if (info.type === "deal") {
+          return (
+            <span className="font-number font-semibold whitespace-nowrap text-primary">
+              {formatRupiah(info.deal)}
+            </span>
+          );
+        }
+        if (info.type === "range") {
+          return info.min === info.max ? (
+            <span className="font-number whitespace-nowrap">
+              {formatRupiah(info.min)}
+            </span>
+          ) : (
+            <span className="font-number text-xs whitespace-nowrap text-muted-foreground">
+              {formatRupiah(info.min)} – {formatRupiah(info.max)}
+            </span>
+          );
+        }
+        return <span className="text-muted-foreground text-sm">—</span>;
+      },
     },
     {
       key: "city",

@@ -14,6 +14,9 @@ import { VendorDetailInfo } from "@/components/vendor/vendor-detail-info";
 import { VendorDetailPackages } from "@/components/vendor/vendor-detail-packages";
 import { VendorDetailImages } from "@/components/vendor/vendor-detail-images";
 import { VendorDetailPayments } from "@/components/vendor/vendor-detail-payments";
+import { VendorAdditionalsTab } from "@/components/vendor/vendor-additionals-tab";
+import { VendorAddonEstimator } from "@/components/vendor/vendor-addon-estimator";
+import type { EstimatedAdditionals } from "@/lib/supabase/database.types";
 import { VendorFormSheet } from "@/components/vendor/vendor-form-sheet";
 import { VendorBookingDialog } from "@/components/vendor/vendor-booking-dialog";
 import { useVendor, useDeleteVendor } from "@/lib/hooks/use-vendors";
@@ -62,7 +65,9 @@ export default function VendorDetailPage() {
 
   const category = vendor.vendor_categories;
   const packages = vendor.vendor_packages ?? [];
+  const additionals = vendor.vendor_additionals ?? [];
   const statusInfo = VENDOR_STATUSES[vendor.status as VendorStatus];
+  const estimate = (vendor.estimated_additionals ?? null) as EstimatedAdditionals | null;
 
   async function handleDelete() {
     try {
@@ -120,55 +125,82 @@ export default function VendorDetailPage() {
         }
       />
 
-      <VendorStatusPipeline vendorId={vendor.id} currentStatus={vendor.status as VendorStatus} />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        {/* ── Sidebar (right) ── */}
+        <div className="space-y-4 order-2 lg:order-2">
+          {/* Tahapan */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Tahapan</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <VendorStatusPipeline vendorId={vendor.id} currentStatus={vendor.status as VendorStatus} />
+            </CardContent>
+          </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
+          {/* Info Vendor (Kontak + Lokasi + Penilaian merged) */}
           <VendorDetailInfo vendor={vendor} />
+
+          {/* Pembayaran */}
+          <VendorDetailPayments
+            vendor={{ ...vendor, estimated_additionals: vendor.estimated_additionals ?? null }}
+            categoryName={category?.name ?? "Lainnya"}
+          />
+
+          {/* Aksi Cepat */}
+          {(vendor.contact_wa || vendor.instagram) && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Aksi Cepat</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 pt-0">
+                {vendor.contact_wa && (
+                  <a
+                    href={`https://wa.me/${vendor.contact_wa.replace(/\D/g, "")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full"
+                  >
+                    <Button variant="outline" size="sm" className="w-full justify-start">
+                      <MessageCircle className="h-4 w-4 mr-2" />
+                      Hubungi via WhatsApp
+                    </Button>
+                  </a>
+                )}
+                {vendor.instagram && (
+                  <a
+                    href={`https://instagram.com/${vendor.instagram.replace("@", "")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full"
+                  >
+                    <Button variant="outline" size="sm" className="w-full justify-start">
+                      <AtSign className="h-4 w-4 mr-2" />
+                      Lihat Instagram
+                    </Button>
+                  </a>
+                )}
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        {/* ── Main content (left) ── */}
+        <div className="lg:col-span-2 space-y-6 order-1 lg:order-1">
           <VendorDetailPackages
             vendorId={vendor.id}
             selectedPackageId={vendor.selected_package_id}
             packages={packages}
           />
+          <VendorAdditionalsTab vendorId={vendor.id} additionals={additionals} />
+          <VendorAddonEstimator
+            vendorId={vendor.id}
+            packages={packages}
+            additionals={additionals}
+            initialEstimate={estimate}
+            initialShareToken={vendor.estimate_share_token ?? null}
+          />
           <VendorDetailImages vendorId={vendor.id} />
-        </div>
-
-        <div className="space-y-6">
-          <VendorDetailPayments vendor={vendor} categoryName={category?.name ?? "Lainnya"} />
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Aksi Cepat</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {vendor.contact_wa && (
-                <a
-                  href={`https://wa.me/${vendor.contact_wa.replace(/\D/g, "")}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full"
-                >
-                  <Button variant="outline" size="sm" className="w-full justify-start">
-                    <MessageCircle className="h-4 w-4 mr-2" />
-                    Hubungi via WhatsApp
-                  </Button>
-                </a>
-              )}
-              {vendor.instagram && (
-                <a
-                  href={`https://instagram.com/${vendor.instagram.replace("@", "")}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full"
-                >
-                  <Button variant="outline" size="sm" className="w-full justify-start">
-                    <AtSign className="h-4 w-4 mr-2" />
-                    Lihat Instagram
-                  </Button>
-                </a>
-              )}
-            </CardContent>
-          </Card>
         </div>
       </div>
 

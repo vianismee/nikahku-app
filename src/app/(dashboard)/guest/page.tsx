@@ -14,8 +14,11 @@ import { SessionManager } from "@/components/guest/session-manager";
 import { GuestImportDialog } from "@/components/guest/guest-import-dialog";
 import { useWedding } from "@/lib/hooks/use-wedding";
 import { useGuests, useSessions } from "@/lib/hooks/use-guests";
+import { TablePagination } from "@/components/shared/table-pagination";
 import { Users, Plus, Upload } from "lucide-react";
 import type { Tables } from "@/lib/supabase/database.types";
+
+const MOBILE_PAGE_SIZE = 10;
 
 type GuestWithSessions = Tables<"guests"> & {
   guest_sessions?: { session_id: string }[];
@@ -32,6 +35,7 @@ export default function GuestPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("semua");
   const [categoryFilter, setCategoryFilter] = useState("semua");
+  const [mobilePage, setMobilePage] = useState(1);
 
   const guests = rawGuests as GuestWithSessions[] | undefined;
 
@@ -54,6 +58,13 @@ export default function GuestPage() {
 
     return result;
   }, [guests, search, statusFilter, categoryFilter]);
+
+  const mobileTotalPages = Math.max(1, Math.ceil(filtered.length / MOBILE_PAGE_SIZE));
+  const safeMobilePage = Math.min(mobilePage, mobileTotalPages);
+  const pagedMobile = filtered.slice(
+    (safeMobilePage - 1) * MOBILE_PAGE_SIZE,
+    safeMobilePage * MOBILE_PAGE_SIZE
+  );
 
   if (weddingLoading || guestsLoading) {
     return (
@@ -106,11 +117,11 @@ export default function GuestPage() {
       <GuestFilters
         guests={(guests ?? []) as Tables<"guests">[]}
         search={search}
-        onSearchChange={setSearch}
+        onSearchChange={(v) => { setSearch(v); setMobilePage(1); }}
         statusFilter={statusFilter}
-        onStatusFilterChange={setStatusFilter}
+        onStatusFilterChange={(v) => { setStatusFilter(v); setMobilePage(1); }}
         categoryFilter={categoryFilter}
-        onCategoryFilterChange={setCategoryFilter}
+        onCategoryFilterChange={(v) => { setCategoryFilter(v); setMobilePage(1); }}
       />
 
       {filtered.length === 0 && guests && guests.length === 0 ? (
@@ -133,8 +144,16 @@ export default function GuestPage() {
           </div>
 
           {/* Mobile: Cards */}
-          <div className="md:hidden">
-            <GuestCardList guests={filtered as Tables<"guests">[]} weddingId={weddingId} />
+          <div className="md:hidden space-y-4">
+            <GuestCardList guests={pagedMobile as Tables<"guests">[]} weddingId={weddingId} />
+            <TablePagination
+              currentPage={safeMobilePage}
+              totalPages={mobileTotalPages}
+              totalItems={filtered.length}
+              pageSize={MOBILE_PAGE_SIZE}
+              onPageChange={setMobilePage}
+              itemLabel="tamu"
+            />
           </div>
         </>
       )}

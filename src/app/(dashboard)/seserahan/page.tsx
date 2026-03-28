@@ -13,9 +13,12 @@ import { SeserahanFormDialog } from "@/components/seserahan/seserahan-form-dialo
 import { useWedding } from "@/lib/hooks/use-wedding";
 import { useSeserahan } from "@/lib/hooks/use-seserahan";
 import { useUIStore } from "@/lib/stores/ui-store";
+import { TablePagination } from "@/components/shared/table-pagination";
 import { Gift, Plus, Download } from "lucide-react";
 import { downloadCsv } from "@/lib/utils/export-csv";
 import { SESERAHAN_CATEGORIES, type SeserahanCategory } from "@/lib/constants/seserahan-statuses";
+
+const MOBILE_PAGE_SIZE = 10;
 
 export default function SeserahanPage() {
   const { data: wedding, isLoading: weddingLoading } = useWedding();
@@ -23,12 +26,20 @@ export default function SeserahanPage() {
   const { data: items, isLoading: itemsLoading } = useSeserahan(weddingId);
   const { seserahanTab, setSeserahanTab } = useUIStore();
   const [formOpen, setFormOpen] = useState(false);
+  const [mobilePage, setMobilePage] = useState(1);
 
   const filtered = useMemo(() => {
     if (!items) return [];
     if (seserahanTab === "semua") return items;
     return items.filter((i) => i.category === seserahanTab);
   }, [items, seserahanTab]);
+
+  const mobileTotalPages = Math.max(1, Math.ceil(filtered.length / MOBILE_PAGE_SIZE));
+  const safeMobilePage = Math.min(mobilePage, mobileTotalPages);
+  const pagedMobile = filtered.slice(
+    (safeMobilePage - 1) * MOBILE_PAGE_SIZE,
+    safeMobilePage * MOBILE_PAGE_SIZE
+  );
 
   const defaultCategory: SeserahanCategory | undefined =
     seserahanTab === "mahar" || seserahanTab === "seserahan" ? seserahanTab : undefined;
@@ -96,7 +107,7 @@ export default function SeserahanPage() {
 
       <Tabs
         value={seserahanTab}
-        onValueChange={(v) => setSeserahanTab(v as "semua" | "mahar" | "seserahan")}
+        onValueChange={(v) => { setSeserahanTab(v as "semua" | "mahar" | "seserahan"); setMobilePage(1); }}
       >
         <TabsList>
           <TabsTrigger value="semua">Semua</TabsTrigger>
@@ -128,8 +139,16 @@ export default function SeserahanPage() {
                 </div>
 
                 {/* Mobile: Cards */}
-                <div className="md:hidden">
-                  <SeserahanCardList items={filtered} weddingId={weddingId} />
+                <div className="md:hidden space-y-4">
+                  <SeserahanCardList items={pagedMobile} weddingId={weddingId} />
+                  <TablePagination
+                    currentPage={safeMobilePage}
+                    totalPages={mobileTotalPages}
+                    totalItems={filtered.length}
+                    pageSize={MOBILE_PAGE_SIZE}
+                    onPageChange={setMobilePage}
+                    itemLabel="item"
+                  />
                 </div>
               </>
             )}

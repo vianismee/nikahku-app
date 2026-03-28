@@ -13,7 +13,7 @@ import {
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { VendorPackageDialog } from "./vendor-package-dialog";
 import { VendorPackageImportDialog } from "./vendor-package-import-dialog";
-import { useUpdateVendor, useDeleteVendorPackage } from "@/lib/hooks/use-vendors";
+import { useUpdateVendor, useDeleteVendorPackage, useDeleteAllVendorPackages } from "@/lib/hooks/use-vendors";
 import { formatRupiah } from "@/lib/utils/format-currency";
 import type { Tables } from "@/lib/supabase/database.types";
 import { Plus, Pencil, Trash2, Check, Package, FileJson, CheckCircle2, XCircle, StickyNote } from "lucide-react";
@@ -31,6 +31,7 @@ export function VendorDetailPackages({ vendorId, selectedPackageId, packages }: 
   const [editPkg, setEditPkg] = useState<Tables<"vendor_packages"> | undefined>();
   const updateVendor = useUpdateVendor();
   const deletePackage = useDeleteVendorPackage();
+  const deleteAllPackages = useDeleteAllVendorPackages();
 
   async function handleSelect(pkgId: string) {
     try {
@@ -50,12 +51,34 @@ export function VendorDetailPackages({ vendorId, selectedPackageId, packages }: 
     }
   }
 
+  async function handleDeleteAll() {
+    try {
+      await deleteAllPackages.mutateAsync(vendorId);
+      toast.success("Semua paket berhasil dihapus");
+    } catch {
+      toast.error("Gagal menghapus semua paket");
+    }
+  }
+
   return (
     <>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Paket Harga</CardTitle>
           <div className="flex items-center gap-2">
+            {packages.length > 0 && (
+              <ConfirmDialog
+                trigger={
+                  <Button size="icon" variant="ghost" className="text-destructive hover:text-destructive h-8 w-8">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                }
+                title="Hapus Semua Paket"
+                description={`Yakin ingin menghapus semua ${packages.length} paket? Tindakan ini tidak bisa dibatalkan.`}
+                confirmLabel="Hapus Semua"
+                onConfirm={handleDeleteAll}
+              />
+            )}
             <Button
               size="sm"
               variant="outline"

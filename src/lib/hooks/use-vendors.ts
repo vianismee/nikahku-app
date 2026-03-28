@@ -6,11 +6,13 @@ import type { Tables, InsertTables, UpdateTables } from "@/lib/supabase/database
 
 export type VendorWithRelations = Tables<"vendors"> & {
   vendor_categories: { name: string; icon: string; color: string } | null;
+  vendor_packages: Array<{ price: number }>;
 };
 
 export type VendorDetail = Tables<"vendors"> & {
   vendor_categories: { name: string; icon: string; color: string } | null;
   vendor_packages: Tables<"vendor_packages">[];
+  vendor_additionals: Tables<"vendor_additionals">[];
   vendor_images: Tables<"vendor_images">[];
 };
 
@@ -23,7 +25,7 @@ export function useVendors(weddingId: string | undefined) {
 
       const { data, error } = await supabase
         .from("vendors")
-        .select("*, vendor_categories(name, icon, color)")
+        .select("*, vendor_categories(name, icon, color), vendor_packages(price)")
         .eq("wedding_id", weddingId)
         .order("created_at", { ascending: false });
 
@@ -43,7 +45,7 @@ export function useVendor(vendorId: string | undefined) {
 
       const { data, error } = await supabase
         .from("vendors")
-        .select("*, vendor_categories(name, icon, color), vendor_packages(*), vendor_images(*)")
+        .select("*, vendor_categories(name, icon, color), vendor_packages(*), vendor_additionals(*), vendor_images(*)")
         .eq("id", vendorId)
         .single();
 
@@ -242,6 +244,38 @@ export function useDeleteVendorPackage() {
   });
 }
 
+export function useDeleteAllVendorPackages() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (vendorId: string) => {
+      const supabase = createClient();
+      const { error } = await supabase.from("vendor_packages").delete().eq("vendor_id", vendorId);
+      if (error) throw error;
+      return vendorId;
+    },
+    onSuccess: (vendorId) => {
+      queryClient.invalidateQueries({ queryKey: ["vendor-packages", vendorId] });
+      queryClient.invalidateQueries({ queryKey: ["vendor", vendorId] });
+    },
+  });
+}
+
+export function useDeleteAllVendorAdditionals() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (vendorId: string) => {
+      const supabase = createClient();
+      const { error } = await supabase.from("vendor_additionals").delete().eq("vendor_id", vendorId);
+      if (error) throw error;
+      return vendorId;
+    },
+    onSuccess: (vendorId) => {
+      queryClient.invalidateQueries({ queryKey: ["vendor-additionals", vendorId] });
+      queryClient.invalidateQueries({ queryKey: ["vendor", vendorId] });
+    },
+  });
+}
+
 export function useVendorImages(vendorId: string | undefined) {
   return useQuery({
     queryKey: ["vendor-images", vendorId],
@@ -335,6 +369,141 @@ export function useCreateVendorCategory() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["vendor-categories"] });
+    },
+  });
+}
+
+export function useUpdateVendorCategory() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: UpdateTables<"vendor_categories"> & { id: string }) => {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("vendor_categories")
+        .update(updates as never)
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data as Tables<"vendor_categories">;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["vendor-categories"] });
+    },
+  });
+}
+
+export function useDeleteVendorCategory() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const supabase = createClient();
+      const { error } = await supabase.from("vendor_categories").delete().eq("id", id);
+      if (error) throw error;
+      return id;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["vendor-categories"] });
+    },
+  });
+}
+
+export function useVendorAdditionals(vendorId: string | undefined) {
+  return useQuery({
+    queryKey: ["vendor-additionals", vendorId],
+    queryFn: async () => {
+      if (!vendorId) return [];
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("vendor_additionals")
+        .select("*")
+        .eq("vendor_id", vendorId)
+        .order("sort_order");
+      if (error) throw error;
+      return (data ?? []) as Tables<"vendor_additionals">[];
+    },
+    enabled: !!vendorId,
+  });
+}
+
+export function useCreateVendorAdditional() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (additional: InsertTables<"vendor_additionals">) => {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("vendor_additionals")
+        .insert(additional as never)
+        .select()
+        .single();
+      if (error) throw error;
+      return data as Tables<"vendor_additionals">;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["vendor-additionals", data.vendor_id] });
+      queryClient.invalidateQueries({ queryKey: ["vendor", data.vendor_id] });
+    },
+  });
+}
+
+export function useBulkCreateVendorAdditionals() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ vendorId, additionals }: { vendorId: string; additionals: Omit<InsertTables<"vendor_additionals">, "vendor_id">[] }) => {
+      const supabase = createClient();
+      const rows = additionals.map((a, i) => ({ ...a, vendor_id: vendorId, sort_order: i }));
+      const { data, error } = await supabase
+        .from("vendor_additionals")
+        .insert(rows as never[])
+        .select();
+      if (error) throw error;
+      return data as Tables<"vendor_additionals">[];
+    },
+    onSuccess: (data) => {
+      if (data.length > 0) {
+        queryClient.invalidateQueries({ queryKey: ["vendor-additionals", data[0].vendor_id] });
+        queryClient.invalidateQueries({ queryKey: ["vendor", data[0].vendor_id] });
+      }
+    },
+  });
+}
+
+export function useUpdateVendorAdditional() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: UpdateTables<"vendor_additionals"> & { id: string }) => {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("vendor_additionals")
+        .update(updates as never)
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data as Tables<"vendor_additionals">;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["vendor-additionals", data.vendor_id] });
+      queryClient.invalidateQueries({ queryKey: ["vendor", data.vendor_id] });
+    },
+  });
+}
+
+export function useDeleteVendorAdditional() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, vendorId }: { id: string; vendorId: string }) => {
+      const supabase = createClient();
+      const { error } = await supabase.from("vendor_additionals").delete().eq("id", id);
+      if (error) throw error;
+      return { vendorId };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["vendor-additionals", data.vendorId] });
+      queryClient.invalidateQueries({ queryKey: ["vendor", data.vendorId] });
     },
   });
 }
