@@ -1,6 +1,16 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
+// Only allow redirects to internal paths (prevents open-redirect attacks)
+function isSafeRedirectPath(path: string): boolean {
+  return (
+    typeof path === "string" &&
+    path.startsWith("/") &&
+    !path.startsWith("//") &&
+    !path.includes("://")
+  );
+}
+
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
@@ -16,7 +26,8 @@ export async function GET(request: Request) {
       } = await supabase.auth.getUser();
 
       if (user) {
-        if (next) {
+        // Safe redirect to requested path (if valid internal path)
+        if (next && isSafeRedirectPath(next)) {
           return NextResponse.redirect(`${origin}${next}`);
         }
 
@@ -25,20 +36,20 @@ export async function GET(request: Request) {
           .from("weddings")
           .select("id")
           .eq("user_id", user.id)
-          .single();
+          .maybeSingle();
 
         if (wedding) {
           return NextResponse.redirect(`${origin}/dashboard`);
         }
 
-        // Check if user has a pending/accepted partner invite (on weddings table)
+        // Check if user has a pending/accepted partner invite
         if (user.email) {
           const { data: partnerWedding } = await supabase
             .from("weddings")
             .select("id, partner_status")
             .eq("partner_email", user.email)
             .in("partner_status", ["pending", "accepted"])
-            .single();
+            .maybeSingle();
 
           if (partnerWedding) {
             return NextResponse.redirect(`${origin}/dashboard`);
