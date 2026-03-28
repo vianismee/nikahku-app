@@ -16,7 +16,7 @@
   "hero": {
     "badge": "Platform Perencanaan Pernikahan #1 di Indonesia",
     "headline": "Rencanakan Pernikahan Impianmu Tanpa Ribet",
-    "subheadline": "Kelola budget, vendor, tamu undangan, seserahan, dan checklist pernikahan — semua dalam satu platform yang mudah dan elegan.",
+    "subheadline": "Kelola budget, vendor, tamu undangan, undangan digital dengan RSVP, seserahan, rundown acara, dan checklist — semua dalam satu platform.",
     "primaryCta": {
       "label": "Mulai Rencanakan Sekarang",
       "href": "/register"
@@ -60,14 +60,32 @@
       {
         "icon": "Store",
         "title": "Manajemen Vendor",
-        "description": "Temukan, bandingkan, dan kelola semua vendor pernikahan — dari katering, dekorasi, hingga fotografer.",
-        "highlights": ["Bandingkan vendor", "Track pembayaran", "Pipeline status"]
+        "description": "Temukan, bandingkan, dan kelola semua vendor — lengkap dengan add-on, kalkulator estimasi biaya, dan share estimasi ke vendor.",
+        "highlights": ["Bandingkan vendor", "Kalkulator estimasi", "Share estimasi"]
+      },
+      {
+        "icon": "Smartphone",
+        "title": "Undangan Digital & RSVP",
+        "description": "Buat undangan digital elegan yang bisa dibuka di browser tamu. Lengkap dengan form RSVP, pilihan sesi, dan ucapan selamat real-time.",
+        "highlights": ["Undangan publik", "Form RSVP", "Ucapan real-time"]
       },
       {
         "icon": "Users",
         "title": "Daftar Tamu",
-        "description": "Kelola undangan tamu dengan mudah, termasuk RSVP tracking, pengelompokan, dan jumlah kursi.",
-        "highlights": ["RSVP tracking", "Pengelompokan tamu", "Export daftar"]
+        "description": "Kelola tamu dengan detail lengkap, konfirmasi kehadiran, pengelompokan, dan link undangan personal per tamu via NanoID.",
+        "highlights": ["Link personal", "RSVP tracking", "Export daftar"]
+      },
+      {
+        "icon": "MessageCircle",
+        "title": "Template WhatsApp",
+        "description": "Kirim undangan langsung ke WhatsApp tamu dengan template pesan yang bisa dikustomisasi — formal, kasual, fun, islami, dan lainnya.",
+        "highlights": ["13+ template", "Variabel dinamis", "Kirim 1 klik"]
+      },
+      {
+        "icon": "ScanLine",
+        "title": "Scanner Souvenir",
+        "description": "Scan QR code tamu di hari H untuk memvalidasi kehadiran dan menandai pengambilan souvenir secara real-time.",
+        "highlights": ["Scan QR Code", "Input manual NanoID", "Multi-petugas"]
       },
       {
         "icon": "Gift",
@@ -77,9 +95,9 @@
       },
       {
         "icon": "ClipboardCheck",
-        "title": "Planning Checklist",
-        "description": "Pantau progres persiapan dengan Kanban board interaktif dan checklist timeline yang terstruktur.",
-        "highlights": ["Kanban board", "Timeline", "Filter prioritas"]
+        "title": "Planning & Rundown",
+        "description": "Pantau progres persiapan dengan Kanban board interaktif, checklist timeline terstruktur, dan rundown acara pernikahan.",
+        "highlights": ["Kanban board", "Timeline", "Rundown acara"]
       },
       {
         "icon": "Heart",
@@ -101,13 +119,13 @@
       },
       {
         "number": "02",
-        "title": "Atur Budget & Pilih Vendor",
-        "description": "Tetapkan anggaran totalmu, alokasikan ke setiap kategori, dan mulai cari vendor yang sesuai."
+        "title": "Atur Budget, Vendor & Tamu",
+        "description": "Tetapkan anggaran total, alokasikan ke setiap kategori, pilih vendor, dan tambahkan daftar tamu lengkap dengan undangan digital."
       },
       {
         "number": "03",
         "title": "Pantau & Nikmati Prosesnya",
-        "description": "Gunakan checklist dan dashboard untuk memantau semua progres. Fokus menikmati momen spesialmu."
+        "description": "Gunakan checklist, rundown, dan scanner di hari H. Kirim undangan via WhatsApp dan pantau RSVP secara real-time."
       }
     ]
   },
@@ -125,7 +143,10 @@
           "Manajemen budget dasar",
           "Hingga 100 tamu undangan",
           "3 kategori vendor",
-          "Checklist planning standar",
+          "Undangan digital + RSVP",
+          "Template WhatsApp bawaan",
+          "Scanner souvenir",
+          "Checklist + rundown acara",
           "Seserahan tracker",
           "Kolaborasi pasangan"
         ],
@@ -143,9 +164,11 @@
           "Semua fitur Gratis",
           "Tamu undangan unlimited",
           "Vendor unlimited + perbandingan",
+          "Template WhatsApp kustom unlimited",
           "Laporan budget detail & export",
-          "Priority support",
+          "Multi-sesi acara",
           "Custom checklist template",
+          "Priority support",
           "Multi-event support"
         ],
         "cta": {
@@ -171,13 +194,13 @@
       {
         "name": "Sari & Budi",
         "location": "Bandung",
-        "text": "Fitur perbandingan vendor-nya luar biasa! Kami bisa bandingkan harga dan review sebelum memutuskan. Sangat menghemat waktu.",
+        "text": "Fitur undangan digital-nya luar biasa! Tamu langsung bisa RSVP dan terima link personal via WhatsApp. Hemat banget waktu dan kertas.",
         "rating": 5
       },
       {
         "name": "Dina & Fajar",
         "location": "Surabaya",
-        "text": "Checklist planning-nya bikin kami tenang. Semua to-do terorganisir dengan timeline yang jelas. Recommended banget!",
+        "text": "Scanner souvenir-nya sangat membantu petugas kami di hari H. Tidak ada lagi antrian panjang atau kebingungan siapa yang sudah ambil souvenir.",
         "rating": 5
       }
     ]
@@ -188,7 +211,19 @@
     "items": [
       {
         "question": "Apakah NIKAHKU gratis?",
-        "answer": "Ya! NIKAHKU sepenuhnya gratis untuk digunakan. Kami percaya setiap pasangan berhak mendapatkan perencanaan pernikahan yang terorganisir."
+        "answer": "Ya! NIKAHKU sepenuhnya gratis untuk digunakan termasuk undangan digital, RSVP, scanner souvenir, dan template WhatsApp. Kami percaya setiap pasangan berhak mendapatkan perencanaan pernikahan yang terorganisir."
+      },
+      {
+        "question": "Bagaimana cara kerja undangan digital?",
+        "answer": "Setelah mengaktifkan RSVP, kamu mendapatkan link undangan publik (misal: nikahku.app/i/nama-kamu). Tamu bisa membuka link tersebut, mencari nama mereka, mengisi RSVP, dan meninggalkan ucapan selamat — semua tanpa perlu login."
+      },
+      {
+        "question": "Bagaimana cara kirim undangan via WhatsApp?",
+        "answer": "Di halaman Tamu, klik tombol WhatsApp di samping nama tamu. Pilih template pesan yang sudah kamu buat (formal, kasual, fun, islami, dll), preview pesan, lalu kirim langsung ke WhatsApp tamu — lengkap dengan link undangan personal dan kode RSVP mereka."
+      },
+      {
+        "question": "Apa itu Scanner Souvenir?",
+        "answer": "Scanner Souvenir adalah fitur untuk hari H. Petugas membuka halaman scanner di HP mereka, lalu scan QR code dari undangan tamu untuk memverifikasi kehadiran dan menandai pengambilan souvenir secara real-time. Mendukung input manual NanoID juga."
       },
       {
         "question": "Bagaimana cara mengundang pasangan?",
@@ -200,15 +235,11 @@
       },
       {
         "question": "Bisa diakses dari HP?",
-        "answer": "NIKAHKU adalah PWA (Progressive Web App) yang bisa diakses dari browser manapun dan di-install layaknya aplikasi native di HP-mu."
-      },
-      {
-        "question": "Apakah bisa export data tamu?",
-        "answer": "Ya, kamu bisa mengexport daftar tamu dalam format yang mudah digunakan untuk kebutuhan cetak undangan atau koordinasi venue."
+        "answer": "NIKAHKU adalah PWA (Progressive Web App) yang bisa diakses dari browser manapun dan di-install layaknya aplikasi native di HP-mu. Termasuk Safari di iPhone."
       },
       {
         "question": "Apa perbedaan paket Gratis dan Premium?",
-        "answer": "Paket Gratis sudah mencakup semua fitur dasar. Premium memberikan akses unlimited untuk tamu dan vendor, laporan detail, export data, dan priority support."
+        "answer": "Paket Gratis sudah mencakup semua fitur termasuk undangan digital, RSVP, scanner, dan template WhatsApp. Premium memberikan akses unlimited untuk tamu, vendor, template kustom, laporan detail, dan priority support."
       }
     ]
   },
@@ -239,7 +270,7 @@
   },
   "finalCta": {
     "headline": "Siap Merencanakan Pernikahan Impianmu?",
-    "subheadline": "Bergabung dengan ribuan pasangan yang sudah mempercayakan perencanaan pernikahan mereka kepada NIKAHKU.",
+    "subheadline": "Bergabung dengan ribuan pasangan yang sudah mempercayakan perencanaan pernikahan mereka kepada NIKAHKU — dari budget hingga undangan digital dan hari H.",
     "cta": {
       "label": "Mulai Sekarang — Gratis!",
       "href": "/register"
@@ -254,7 +285,7 @@
   },
   "footer": {
     "brand": "NIKAHKU",
-    "tagline": "Platform perencanaan pernikahan yang membantu pasangan Indonesia mewujudkan hari istimewa mereka.",
+    "tagline": "Platform perencanaan pernikahan lengkap yang membantu pasangan Indonesia mewujudkan hari istimewa mereka.",
     "links": [
       {
         "group": "Platform",

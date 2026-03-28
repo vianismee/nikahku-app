@@ -6,21 +6,27 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { GuestFormDialog } from "./guest-form-dialog";
+import { WhatsappSendDialog } from "./whatsapp-send-dialog";
 import { useDeleteGuest } from "@/lib/hooks/use-guests";
 import { RSVP_STATUSES } from "@/lib/constants/rsvp-statuses";
-import { Pencil, Trash2, Phone, Mail, Users } from "lucide-react";
+import { Pencil, Trash2, Phone, Mail, Users, MessageCircle } from "lucide-react";
 import type { Tables } from "@/lib/supabase/database.types";
 import { toast } from "sonner";
 
 interface GuestCardListProps {
   guests: Tables<"guests">[];
   weddingId: string;
+  rsvpSlug: string;
+  coupleName: string;
+  weddingDate?: string | null;
 }
 
-export function GuestCardList({ guests, weddingId }: GuestCardListProps) {
+export function GuestCardList({ guests, weddingId, rsvpSlug, coupleName, weddingDate }: GuestCardListProps) {
   const deleteGuest = useDeleteGuest();
   const [editGuest, setEditGuest] = useState<Tables<"guests"> | undefined>();
   const [editOpen, setEditOpen] = useState(false);
+  const [waGuest, setWaGuest] = useState<Tables<"guests"> | null>(null);
+  const [waOpen, setWaOpen] = useState(false);
 
   async function handleDelete(id: string) {
     try {
@@ -46,6 +52,14 @@ export function GuestCardList({ guests, weddingId }: GuestCardListProps) {
                     <h4 className="font-medium text-sm truncate">{guest.name}</h4>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      title="Kirim WhatsApp"
+                      onClick={() => { setWaGuest(guest); setWaOpen(true); }}
+                    >
+                      <MessageCircle className="h-3.5 w-3.5 text-green-600" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="icon-sm"
@@ -113,6 +127,18 @@ export function GuestCardList({ guests, weddingId }: GuestCardListProps) {
           if (!o) setEditGuest(undefined);
         }}
       />
+
+      {waGuest && (
+        <WhatsappSendDialog
+          guest={waGuest}
+          weddingId={weddingId}
+          rsvpSlug={rsvpSlug}
+          coupleName={coupleName}
+          weddingDate={weddingDate}
+          open={waOpen}
+          onOpenChange={(o) => { setWaOpen(o); if (!o) setWaGuest(null); }}
+        />
+      )}
     </>
   );
 }

@@ -2,7 +2,10 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
+import { customAlphabet } from "nanoid";
 import type { Tables, InsertTables, UpdateTables } from "@/lib/supabase/database.types";
+
+const generateNanoId = customAlphabet("1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ", 5);
 
 export function useGuests(weddingId: string | undefined) {
   return useQuery({
@@ -50,14 +53,26 @@ export function useCreateGuest() {
   return useMutation({
     mutationFn: async (guest: InsertTables<"guests">) => {
       const supabase = createClient();
-      const { data, error } = await supabase
-        .from("guests")
-        .insert(guest as never)
-        .select()
-        .single();
 
-      if (error) throw error;
-      return data as Tables<"guests">;
+      // Auto-generate NanoID — retry hingga 5x jika collision
+      let nanoId = generateNanoId();
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const { data, error } = await supabase
+          .from("guests")
+          .insert({ ...guest, nano_id: nanoId } as never)
+          .select()
+          .single();
+
+        if (!error) return data as Tables<"guests">;
+
+        // 23505 = unique_violation di PostgreSQL
+        if ((error as { code?: string }).code === "23505" && attempt < 4) {
+          nanoId = generateNanoId();
+          continue;
+        }
+        throw error;
+      }
+      throw new Error("Gagal generate NanoID unik");
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["guests", variables.wedding_id] });

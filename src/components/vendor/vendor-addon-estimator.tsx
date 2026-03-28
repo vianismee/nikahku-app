@@ -16,6 +16,7 @@ import { formatRupiah } from "@/lib/utils/format-currency";
 import type { Tables } from "@/lib/supabase/database.types";
 import type { EstimatedAdditionals } from "@/lib/supabase/database.types";
 import { Calculator, Info, Minus, Plus, Save, RotateCcw, Share2 } from "lucide-react";
+import { copyToClipboard } from "@/lib/utils/clipboard";
 import { toast } from "sonner";
 
 interface VendorAddonEstimatorProps {
@@ -140,11 +141,16 @@ export function VendorAddonEstimator({
         estimate_share_token: token,
       });
       setShareToken(token);
-      const url = `${window.location.origin}/share/estimate/${token}`;
-      await navigator.clipboard.writeText(url);
-      toast.success("Link estimasi disalin ke clipboard!");
     } catch {
       toast.error("Gagal membuat link share");
+      return;
+    }
+    const url = `${window.location.origin}/share/estimate/${token}`;
+    try {
+      await copyToClipboard(url);
+      toast.success("Link estimasi disalin ke clipboard!");
+    } catch {
+      toast.error(`Salin link ini: ${url}`);
     }
   }
 

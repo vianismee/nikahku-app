@@ -124,7 +124,8 @@ export async function updateSession(request: NextRequest) {
     publicRoutes.includes(pathname) ||
     pathname.startsWith("/callback") ||
     pathname.startsWith("/rsvp") ||
-    pathname.startsWith("/share");
+    pathname.startsWith("/share") ||
+    pathname.startsWith("/i/");
 
   if (!user && !isGuestOnly && !isPublic) {
     const url = request.nextUrl.clone();

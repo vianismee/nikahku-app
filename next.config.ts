@@ -32,11 +32,36 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   turbopack: {},
+  allowedDevOrigins: ["192.168.18.217"],
   async headers() {
     return [
       {
+        // Default security headers untuk semua route
         source: "/(.*)",
         headers: securityHeaders,
+      },
+      {
+        // /rsvp/* — embeddable via iframe oleh undangan pihak ketiga, butuh kamera untuk scanner
+        source: "/rsvp/:path*",
+        headers: [
+          { key: "X-Frame-Options", value: "ALLOWALL" },
+          { key: "Content-Security-Policy", value: "frame-ancestors *" },
+          {
+            key: "Permissions-Policy",
+            value: "camera=*, microphone=(), geolocation=(), payment=()",
+          },
+        ],
+      },
+      {
+        // /i/* — halaman kartu tamu publik, tidak di-iframe (anti-clickjacking tetap berlaku)
+        source: "/i/:path*",
+        headers: [
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=(), payment=()",
+          },
+        ],
       },
     ];
   },

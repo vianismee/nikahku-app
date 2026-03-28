@@ -8,10 +8,11 @@ import { DataTable, type Column } from "@/components/shared/data-table";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { GuestFormDialog } from "./guest-form-dialog";
+import { WhatsappSendDialog } from "./whatsapp-send-dialog";
 import { useDeleteGuest, useBulkUpdateRsvp } from "@/lib/hooks/use-guests";
 import { RSVP_STATUSES, type RsvpStatus } from "@/lib/constants/rsvp-statuses";
 import { downloadCsv } from "@/lib/utils/export-csv";
-import { Pencil, Trash2, Phone, Mail, Download, X } from "lucide-react";
+import { Pencil, Trash2, Phone, Mail, Download, X, MessageCircle } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -31,13 +32,17 @@ interface GuestTableProps {
   guests: GuestWithSessions[];
   weddingId: string;
   sessions?: Tables<"sessions">[];
+  rsvpSlug: string;
+  coupleName: string;
+  weddingDate?: string | null;
 }
 
-export function GuestTable({ guests, weddingId, sessions }: GuestTableProps) {
+export function GuestTable({ guests, weddingId, sessions, rsvpSlug, coupleName, weddingDate }: GuestTableProps) {
   const deleteGuest = useDeleteGuest();
   const bulkUpdateRsvp = useBulkUpdateRsvp();
   const [editGuest, setEditGuest] = useState<GuestWithSessions | undefined>();
   const [editOpen, setEditOpen] = useState(false);
+  const [waGuest, setWaGuest] = useState<GuestWithSessions | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkStatus, setBulkStatus] = useState<RsvpStatus>("belum_diundang");
 
@@ -212,6 +217,14 @@ export function GuestTable({ guests, weddingId, sessions }: GuestTableProps) {
           <Button
             variant="ghost"
             size="icon-sm"
+            title="Kirim WhatsApp"
+            onClick={() => setWaGuest(guest as GuestWithSessions)}
+          >
+            <MessageCircle className="h-3.5 w-3.5 text-green-600" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-sm"
             onClick={() => {
               setEditGuest(guest as GuestWithSessions);
               setEditOpen(true);
@@ -306,6 +319,18 @@ export function GuestTable({ guests, weddingId, sessions }: GuestTableProps) {
           if (!o) setEditGuest(undefined);
         }}
       />
+
+      {waGuest && (
+        <WhatsappSendDialog
+          guest={waGuest}
+          weddingId={weddingId}
+          rsvpSlug={rsvpSlug}
+          coupleName={coupleName}
+          weddingDate={weddingDate}
+          open={!!waGuest}
+          onOpenChange={(o) => { if (!o) setWaGuest(null); }}
+        />
+      )}
     </>
   );
 }

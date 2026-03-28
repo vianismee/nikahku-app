@@ -1,4 +1,4 @@
-// Generated from NIKAHKU database schema (001_initial_schema.sql)
+// Generated from NIKAHKU database schema (001_initial_schema.sql + 006_rsvp_wishes_qr_invitation.sql)
 // To regenerate: npx supabase gen types typescript --project-id xtqkphoybqlsdyqvfcnu > src/lib/supabase/database.types.ts
 
 export type Json =
@@ -26,6 +26,11 @@ export type Database = {
           partner_email: string | null;
           partner_user_id: string | null;
           partner_status: "pending" | "accepted" | "rejected" | null;
+          rsvp_enabled: boolean;
+          rsvp_slug: string | null;
+          rsvp_closes_at: string | null;
+          rsvp_max_pax_per_guest: number;
+          scanner_pin: string | null;
         };
         Insert: {
           id?: string;
@@ -40,6 +45,11 @@ export type Database = {
           partner_email?: string | null;
           partner_user_id?: string | null;
           partner_status?: "pending" | "accepted" | "rejected" | null;
+          rsvp_enabled?: boolean;
+          rsvp_slug?: string | null;
+          rsvp_closes_at?: string | null;
+          rsvp_max_pax_per_guest?: number;
+          scanner_pin?: string | null;
         };
         Update: {
           id?: string;
@@ -54,6 +64,11 @@ export type Database = {
           partner_email?: string | null;
           partner_user_id?: string | null;
           partner_status?: "pending" | "accepted" | "rejected" | null;
+          rsvp_enabled?: boolean;
+          rsvp_slug?: string | null;
+          rsvp_closes_at?: string | null;
+          rsvp_max_pax_per_guest?: number;
+          scanner_pin?: string | null;
         };
       };
       budgets: {
@@ -500,6 +515,10 @@ export type Database = {
           notes: string | null;
           created_at: string;
           updated_at: string;
+          nano_id: string;
+          souvenir_taken: boolean;
+          souvenir_taken_at: string | null;
+          souvenir_taken_by: string | null;
         };
         Insert: {
           id?: string;
@@ -519,6 +538,10 @@ export type Database = {
           notes?: string | null;
           created_at?: string;
           updated_at?: string;
+          nano_id?: string;
+          souvenir_taken?: boolean;
+          souvenir_taken_at?: string | null;
+          souvenir_taken_by?: string | null;
         };
         Update: {
           id?: string;
@@ -538,6 +561,10 @@ export type Database = {
           notes?: string | null;
           created_at?: string;
           updated_at?: string;
+          nano_id?: string;
+          souvenir_taken?: boolean;
+          souvenir_taken_at?: string | null;
+          souvenir_taken_by?: string | null;
         };
       };
       guest_sessions: {
@@ -707,6 +734,147 @@ export type Database = {
           description?: string | null;
           pic?: string | null;
           location?: string | null;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      invitations: {
+        Row: {
+          id: string;
+          wedding_id: string;
+          slug: string;
+          published: boolean;
+          headline: string;
+          opening_text: string | null;
+          closing_text: string | null;
+          groom_full_name: string | null;
+          bride_full_name: string | null;
+          groom_nickname: string | null;
+          bride_nickname: string | null;
+          groom_parents: string | null;
+          bride_parents: string | null;
+          hero_photo_url: string | null;
+          gallery_urls: string[];
+          template: "classic" | "modern" | "rustic";
+          theme_color: string;
+          font_heading: "playfair" | "cormorant" | "montserrat";
+          hashtag: string | null;
+          love_story_text: string | null;
+          show_rsvp: boolean;
+          show_wishes: boolean;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          wedding_id: string;
+          slug: string;
+          published?: boolean;
+          headline?: string;
+          opening_text?: string | null;
+          closing_text?: string | null;
+          groom_full_name?: string | null;
+          bride_full_name?: string | null;
+          groom_nickname?: string | null;
+          bride_nickname?: string | null;
+          groom_parents?: string | null;
+          bride_parents?: string | null;
+          hero_photo_url?: string | null;
+          gallery_urls?: string[];
+          template?: "classic" | "modern" | "rustic";
+          theme_color?: string;
+          font_heading?: "playfair" | "cormorant" | "montserrat";
+          hashtag?: string | null;
+          love_story_text?: string | null;
+          show_rsvp?: boolean;
+          show_wishes?: boolean;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          wedding_id?: string;
+          slug?: string;
+          published?: boolean;
+          headline?: string;
+          opening_text?: string | null;
+          closing_text?: string | null;
+          groom_full_name?: string | null;
+          bride_full_name?: string | null;
+          groom_nickname?: string | null;
+          bride_nickname?: string | null;
+          groom_parents?: string | null;
+          bride_parents?: string | null;
+          hero_photo_url?: string | null;
+          gallery_urls?: string[];
+          template?: "classic" | "modern" | "rustic";
+          theme_color?: string;
+          font_heading?: "playfair" | "cormorant" | "montserrat";
+          hashtag?: string | null;
+          love_story_text?: string | null;
+          show_rsvp?: boolean;
+          show_wishes?: boolean;
+          updated_at?: string;
+        };
+      };
+      wishes: {
+        Row: {
+          id: string;
+          wedding_id: string;
+          guest_id: string | null;
+          guest_name: string;
+          message: string;
+          is_visible: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          wedding_id: string;
+          guest_id?: string | null;
+          guest_name: string;
+          message: string;
+          is_visible?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          wedding_id?: string;
+          guest_id?: string | null;
+          guest_name?: string;
+          message?: string;
+          is_visible?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      whatsapp_templates: {
+        Row: {
+          id: string;
+          wedding_id: string;
+          name: string;
+          body: string;
+          is_default: boolean;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          wedding_id: string;
+          name: string;
+          body: string;
+          is_default?: boolean;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          wedding_id?: string;
+          name?: string;
+          body?: string;
+          is_default?: boolean;
           sort_order?: number;
           created_at?: string;
           updated_at?: string;

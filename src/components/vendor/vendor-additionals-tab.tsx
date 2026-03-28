@@ -247,7 +247,7 @@ export function VendorAdditionalsTab({ vendorId, additionals }: VendorAdditional
             </p>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
             {additionals.map((item) =>
               editId === item.id ? (
                 <AdditionalForm

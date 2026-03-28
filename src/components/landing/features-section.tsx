@@ -7,6 +7,9 @@ import {
   Gift,
   ClipboardCheck,
   Heart,
+  Smartphone,
+  MessageCircle,
+  ScanLine,
   type LucideIcon,
 } from "lucide-react";
 import { useGsapScrollTrigger, useGsapStagger } from "@/lib/hooks/use-gsap";
@@ -18,6 +21,9 @@ const iconMap: Record<string, LucideIcon> = {
   Gift,
   ClipboardCheck,
   Heart,
+  Smartphone,
+  MessageCircle,
+  ScanLine,
 };
 
 interface FeaturesSectionProps {

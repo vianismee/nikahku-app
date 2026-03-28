@@ -27,6 +27,7 @@ import {
   Bot,
 } from "lucide-react";
 import { toast } from "sonner";
+import { copyToClipboard } from "@/lib/utils/clipboard";
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -205,7 +206,12 @@ export function VendorPackageImportDialog({ vendorId, open, onOpenChange }: Vend
   const bulkCreateAdditionals = useBulkCreateVendorAdditionals();
 
   async function handleCopy(text: string, type: "prompt" | "example") {
-    await navigator.clipboard.writeText(text);
+    try {
+      await copyToClipboard(text);
+    } catch {
+      toast.error("Gagal menyalin");
+      return;
+    }
     if (type === "prompt") {
       setCopiedPrompt(true);
       setTimeout(() => setCopiedPrompt(false), 2000);
