@@ -134,6 +134,19 @@ export function VendorAddonEstimator({
   async function handleShare() {
     const token = shareToken ?? crypto.randomUUID();
     const estimate = buildEstimate();
+    const url = `${window.location.origin}/share/estimate/${token}`;
+
+    // Copy BEFORE any async network call to preserve the user gesture context.
+    // Safari and Chrome on PWA only allow Clipboard API within the same
+    // synchronous tick as the user gesture — awaiting a fetch first loses it.
+    let copied = false;
+    try {
+      await copyToClipboard(url);
+      copied = true;
+    } catch {
+      // clipboard failed; we'll still save and show the URL in a toast
+    }
+
     try {
       await updateVendor.mutateAsync({
         id: vendorId,
@@ -141,16 +154,13 @@ export function VendorAddonEstimator({
         estimate_share_token: token,
       });
       setShareToken(token);
+      if (copied) {
+        toast.success("Link estimasi disalin ke clipboard!");
+      } else {
+        toast.info(`Salin link ini: ${url}`);
+      }
     } catch {
       toast.error("Gagal membuat link share");
-      return;
-    }
-    const url = `${window.location.origin}/share/estimate/${token}`;
-    try {
-      await copyToClipboard(url);
-      toast.success("Link estimasi disalin ke clipboard!");
-    } catch {
-      toast.error(`Salin link ini: ${url}`);
     }
   }
 
