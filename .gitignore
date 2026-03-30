@@ -49,3 +49,6 @@ next-env.d.ts
 
 # file
 /example-price-list
+
+# claude
+settings.local.json
