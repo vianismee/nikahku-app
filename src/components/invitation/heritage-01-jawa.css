@@ -1,0 +1,385 @@
+/* Heritage 01 JAWA — Design Tokens & Base Styles */
+
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Cormorant+Infant:wght@400;600;700&family=Alex+Brush&family=Poppins:wght@400;500;600;700&display=swap');
+
+/* ── Tokens ── */
+:root {
+  --h-brown-1: #472A1C;
+  --h-brown-2: #5C4324;
+  --h-brown-3: #8B5B43;
+  --h-brown-4: #92614B;
+  --h-gold-1: #D7BB83;
+  --h-gold-2: #A38C5E;
+  --h-cream: #FFFCF3;
+  --h-cream-a: #FFFCF3ED;
+  --h-cream-b: #FFFCF3DE;
+  --h-white: #FFFFFF;
+  --h-black: #000000;
+
+  --h-radius-card: 20px;
+  --h-radius-pill: 500px;
+  --h-radius-circle: 200px;
+  --h-border-gold: 2px solid var(--h-gold-1);
+  --h-border-gold-thick: 4px solid var(--h-gold-1);
+
+  --h-font-script: 'Pinyon Script', cursive;
+  --h-font-serif: 'Cormorant Infant', serif;
+  --h-font-brush: 'Alex Brush', cursive;
+  --h-font-sans: 'Poppins', sans-serif;
+
+  --h-asset: '/templates/heritage-01-jawa/assets';
+}
+
+/* ── Reset / Base ── */
+.h-invitation {
+  font-family: var(--h-font-sans);
+  -webkit-font-smoothing: antialiased;
+  background: var(--h-black);
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+.h-invitation *,
+.h-invitation *::before,
+.h-invitation *::after { box-sizing: border-box; }
+
+.h-invitation img { max-width: 100%; height: auto; display: block; }
+.h-invitation a { color: inherit; text-decoration: none; }
+
+/* ── Sections ── */
+.h-section {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+.h-section--fullheight {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Brown Gradient BG ── */
+.h-bg-brown {
+  background: radial-gradient(at center center, var(--h-brown-4) 0%, var(--h-brown-1) 80%);
+}
+.h-bg-brown::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: var(--h-brown-2);
+  background-image: url('/templates/heritage-01-jawa/assets/JAWA-PATTERN.png');
+  background-position: center center;
+  background-size: 150px auto;
+  opacity: 0.3;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Cards ── */
+.h-card {
+  background: var(--h-cream);
+  border-radius: var(--h-radius-card);
+  box-shadow: 0 0 10px 0 rgba(0,0,0,0.5) inset;
+  position: relative;
+  overflow: hidden;
+}
+.h-card--bordered {
+  border: var(--h-border-gold);
+  box-shadow: 0 0 10px 0 rgba(0,0,0,0.5) inset;
+  background: var(--h-cream-b);
+}
+
+/* ── Buttons ── */
+.h-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(90deg, var(--h-gold-1) 0%, var(--h-gold-2) 100%);
+  color: var(--h-white);
+  font-family: var(--h-font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 30px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  text-decoration: none;
+}
+.h-btn:hover { opacity: 0.9; }
+.h-btn--sm {
+  padding: 8px 13px;
+}
+.h-btn--dark {
+  background: var(--h-gold-1);
+}
+
+/* ── Typography helpers ── */
+.h-title-script {
+  font-family: var(--h-font-script);
+  font-weight: 500;
+  line-height: 1.3em;
+}
+.h-title-serif {
+  font-family: var(--h-font-serif);
+  font-weight: 600;
+  line-height: 1.3em;
+}
+.h-text-sans {
+  font-family: var(--h-font-sans);
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.5em;
+  letter-spacing: 0.5px;
+}
+
+/* ── Overlay ── */
+.h-overlay-dark {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.44) 70%, var(--h-brown-1) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+.h-overlay-cream {
+  position: absolute;
+  inset: 0;
+  background: var(--h-cream);
+  opacity: 0.8;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── Animations ── */
+@keyframes h-zoomIn {
+  from { opacity: 0; transform: scale(0.5); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes h-fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes h-fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes h-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.h-anim-zoom {
+  opacity: 0;
+  animation: h-zoomIn 0.6s ease forwards;
+}
+.h-anim-fade {
+  opacity: 0;
+  animation: h-fadeIn 0.8s ease forwards;
+}
+.h-anim-fade-up {
+  opacity: 0;
+  animation: h-fadeInUp 0.7s ease forwards;
+}
+
+/* ── Divider ── */
+.h-divider {
+  border: none;
+  border-top: 1px solid var(--h-black);
+  margin: 15px 0;
+}
+
+/* ── Spacer ── */
+.h-spacer { flex-shrink: 0; }
+
+/* ── Ornament column (JAWA motifs top+bottom) ── */
+.h-ornament-col {
+  position: relative;
+  background-color: var(--h-cream-a);
+  background-image: url('/templates/heritage-01-jawa/assets/JAWA-MOTIF-ATAS.png');
+  background-position: top center;
+  background-repeat: no-repeat;
+  background-size: 100% auto;
+  border: var(--h-border-gold-thick);
+  border-radius: var(--h-radius-circle);
+  margin: 30px 20px;
+  padding: 0;
+}
+.h-ornament-col::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background-image: url('/templates/heritage-01-jawa/assets/JAWA-MOTIF-BAWAH.png');
+  background-position: bottom center;
+  background-repeat: no-repeat;
+  background-size: 100% auto;
+  opacity: 1;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* ── Couple photo circle ── */
+.h-couple-photo {
+  border: 2px solid var(--h-gold-1);
+  border-radius: var(--h-radius-pill);
+  box-shadow: 5px 5px 5px 0 rgba(0,0,0,0.3);
+  overflow: hidden;
+  position: relative;
+}
+.h-couple-photo-inner {
+  background-color: var(--h-black);
+  position: relative;
+}
+.h-couple-photo-inner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: 50% 0%;
+  opacity: 1;
+}
+
+/* ── Countdown box ── */
+.h-countdown-box {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--h-gold-1);
+  border-radius: 10px;
+  padding: 5px 5px;
+  margin: 0 3px;
+  min-width: 50px;
+}
+.h-countdown-digits {
+  font-family: var(--h-font-serif);
+  font-size: 28px;
+  color: var(--h-brown-1);
+  line-height: 1.3em;
+}
+.h-countdown-label {
+  font-family: var(--h-font-sans);
+  font-size: 12px;
+  color: var(--h-brown-1);
+  line-height: 1.3em;
+}
+
+/* ── Music player floating ── */
+.h-music-btn {
+  position: fixed;
+  bottom: 65px;
+  right: 15px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.81);
+  color: var(--h-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  z-index: 9998;
+  font-size: 15px;
+  padding: 0;
+  transition: transform 0.2s;
+}
+.h-music-btn:hover { transform: scale(1.1); }
+.h-music-btn--playing i {
+  animation: h-spin 2s linear infinite;
+}
+
+/* ── Copy toast ── */
+.h-copy-toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--h-brown-1);
+  color: var(--h-white);
+  font-family: var(--h-font-sans);
+  font-size: 12px;
+  padding: 8px 20px;
+  border-radius: 20px;
+  z-index: 99999;
+  animation: h-fadeInUp 0.3s ease;
+}
+
+/* ── Gallery grid ── */
+.h-gallery-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.h-gallery-grid > * { border-radius: 10px; overflow: hidden; }
+.h-gallery-img {
+  background-position: 50% 50%;
+  background-size: cover;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.h-gallery-img:hover { opacity: 0.85; }
+
+/* ── Lightbox ── */
+.h-lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.95);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: h-fadeIn 0.2s ease;
+}
+.h-lightbox img {
+  max-width: 95vw;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 8px;
+}
+.h-lightbox-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+/* ── Wish item ── */
+.h-wish-item {
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+.h-wish-name {
+  font-family: var(--h-font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--h-black);
+}
+.h-wish-time {
+  font-size: 11px;
+  color: #999;
+}
+.h-wish-text {
+  font-family: var(--h-font-sans);
+  font-size: 13px;
+  color: var(--h-black);
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+/* ── Responsive ── */
+@media (min-width: 768px) {
+  .h-section--split { display: flex; }
+  .h-section--split > * { flex: 1; }
+}
