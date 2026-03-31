@@ -14,6 +14,7 @@ import {
   LogOut,
   Heart,
   ScrollText,
+  Mail,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ const NAV_ITEMS = [
   { href: "/vendor", label: "Vendor", icon: Store },
   { href: "/seserahan", label: "Mahar & Seserahan", icon: Gift },
   { href: "/guest", label: "Tamu", icon: Users },
+  { href: "/invitation", label: "Undangan", icon: Mail },
   { href: "/planning", label: "Planning", icon: ClipboardList },
   { href: "/rundown", label: "Rundown Acara", icon: ScrollText },
   { href: "/dokumen", label: "Dokumen KUA", icon: FileText },
