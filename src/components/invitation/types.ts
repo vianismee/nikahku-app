@@ -5,12 +5,17 @@ export type SessionData = {
   time_start: string | null;
   time_end: string | null;
   venue: string | null;
+  venue_maps_url: string | null;
   max_capacity: number | null;
 };
 
 export type LoveStoryEntry = { tahun: string; cerita: string };
 
 export type InvitationPageProps = {
+  themeColor: string;
+  fontHeading: string;
+  fontBody: string;
+
   namaWanitaPanggil: string;
   namaWanitaLengkap: string;
   inisialWanita: string;
@@ -25,6 +30,10 @@ export type InvitationPageProps = {
   igPria: string;
   igPriaUrl: string;
 
+  openingText: string;
+  ayatSource: string;
+  closingText: string;
+
   tanggalSingkat: string;
   tanggalHeader: string;
   countdownDate: string;
@@ -35,6 +44,8 @@ export type InvitationPageProps = {
   galleryUrls: string[];
   musicUrl: string;
   heroPhotoUrl: string | null;
+  groomPhotoUrl: string | null;
+  bridePhotoUrl: string | null;
   hashtag: string;
 
   loveStory: LoveStoryEntry[];
@@ -53,4 +64,11 @@ export type InvitationPageProps = {
   showWishes: boolean;
 
   sessions: SessionData[];
+
+  /** Preview mode: skip gate, hide guest-specific features */
+  preview?: boolean;
+
+  /** Custom Google Font names (overrides fontHeading/fontBody when set) */
+  fontHeadingName?: string;
+  fontBodyName?: string;
 };

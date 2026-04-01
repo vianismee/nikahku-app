@@ -36,13 +36,17 @@ import {
   X,
   ChevronDown,
   Search,
+  Upload,
+  ImageIcon,
+  Eye,
 } from "lucide-react";
 import type { Tables } from "@/lib/supabase/database.types";
 import Link from "next/link";
+import PreviewOverlay from "@/components/invitation/preview-overlay";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type InvitationType = "classic" | "modern" | "rustic";
+type InvitationType = "basic" | "classic" | "modern" | "rustic";
 
 interface GiftAccount {
   id: string;
@@ -51,12 +55,15 @@ interface GiftAccount {
   account_name: string;
 }
 
+interface LoveStoryEntry {
+  id: string;
+  tahun: string;
+  cerita: string;
+}
+
 interface InvitationExtra {
   groom_instagram?: string;
   bride_instagram?: string;
-  venue_name?: string;
-  venue_address?: string;
-  venue_maps_url?: string;
   gift_accounts?: GiftAccount[];
   font_body?: "dmsans" | "serif";
   ayat_source?: string;
@@ -79,15 +86,17 @@ interface FormData {
   // Pembuka
   opening_text: string;
   ayat_source: string;
-  // Lokasi
-  venue_name: string;
-  venue_address: string;
-  venue_maps_url: string;
+  // Love Story
+  love_story: LoveStoryEntry[];
   // Gift
   gift_accounts: GiftAccount[];
   // Penutup
   closing_text: string;
   hashtag: string;
+  // Media
+  groom_photo_url: string;
+  bride_photo_url: string;
+  gallery_urls: string[];
   // Tampilan
   font_heading: "playfair" | "cormorant" | "montserrat";
   font_body: "dmsans" | "serif";
@@ -107,9 +116,15 @@ const TEMPLATES: {
   available: boolean;
 }[] = [
   {
+    id: "basic",
+    label: "Basic",
+    description: "Bersih & elegan. Tampilkan semua konten dengan desain modern yang timeless.",
+    available: true,
+  },
+  {
     id: "classic",
-    label: "Classic",
-    description: "Elegan dengan sentuhan tradisional, cocok untuk pernikahan formal.",
+    label: "Heritage Jawa",
+    description: "Elegan dengan sentuhan tradisional Jawa, cocok untuk pernikahan adat.",
     available: true,
   },
   {
@@ -138,6 +153,36 @@ const COLOR_SWATCHES = [
 ];
 
 // ─── Template Previews ────────────────────────────────────────────────────────
+
+function BasicPreview() {
+  return (
+    <div className="w-full h-full bg-[#FAFAF8] flex flex-col items-center justify-between p-4 rounded overflow-hidden">
+      <div className="flex items-center gap-1.5 mt-1">
+        <div className="h-px w-6 bg-[#8B6F4E]/40" />
+        <div className="w-1 h-1 rounded-full bg-[#8B6F4E]" />
+        <div className="h-px w-6 bg-[#8B6F4E]/40" />
+      </div>
+      <div className="text-center space-y-1.5 my-2">
+        <p className="text-[7px] text-[#8B6F4E]/70 tracking-[0.18em] uppercase">Undangan</p>
+        <p className="text-[12px] font-bold text-[#8B6F4E]" style={{ fontFamily: "serif" }}>Raka & Dewi</p>
+        <div className="flex gap-0.5 justify-center">
+          <div className="w-5 h-5 rounded-full bg-[#8B6F4E]/15 border border-[#8B6F4E]/20" />
+          <div className="w-5 h-5 rounded-full bg-[#8B6F4E]/15 border border-[#8B6F4E]/20" />
+        </div>
+        <p className="text-[7px] text-[#8B6F4E]/60">Sabtu, 14 Juni 2025</p>
+      </div>
+      <div className="w-full space-y-1 mb-1">
+        <div className="h-1 bg-[#8B6F4E]/15 rounded-full" />
+        <div className="h-1 bg-[#8B6F4E]/10 rounded-full w-3/4 mx-auto" />
+      </div>
+      <div className="flex items-center gap-1.5 mb-1">
+        <div className="h-px w-6 bg-[#8B6F4E]/40" />
+        <div className="w-1 h-1 rounded-full bg-[#8B6F4E]" />
+        <div className="h-px w-6 bg-[#8B6F4E]/40" />
+      </div>
+    </div>
+  );
+}
 
 function ClassicPreview() {
   return (
@@ -475,12 +520,13 @@ export default function InvitationPage() {
     bride_instagram: "",
     opening_text: "",
     ayat_source: "",
-    venue_name: "",
-    venue_address: "",
-    venue_maps_url: "",
+    love_story: [],
     gift_accounts: [],
     closing_text: "",
     hashtag: "",
+    groom_photo_url: "",
+    bride_photo_url: "",
+    gallery_urls: [],
     font_heading: "playfair",
     font_body: "dmsans",
     font_heading_name: "Playfair Display",
@@ -490,6 +536,7 @@ export default function InvitationPage() {
     show_wishes: true,
   });
   const [formLoaded, setFormLoaded] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const { data: invitation, isLoading: invLoading } = useQuery({
     queryKey: ["invitation", weddingId],
@@ -506,6 +553,22 @@ export default function InvitationPage() {
     enabled: !!weddingId,
   });
 
+  // Sessions query for preview
+  const { data: previewSessions = [] } = useQuery({
+    queryKey: ["sessions-preview", weddingId],
+    queryFn: async () => {
+      if (!weddingId) return [];
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("sessions")
+        .select("id, name, session_date, time_start, time_end, venue, venue_maps_url, max_capacity")
+        .eq("wedding_id", weddingId)
+        .order("sort_order");
+      return (data ?? []) as import("@/components/invitation/types").SessionData[];
+    },
+    enabled: !!weddingId,
+  });
+
   // Populate form when invitation loads
   useEffect(() => {
     if (invitation && !formLoaded) {
@@ -515,6 +578,10 @@ export default function InvitationPage() {
       } catch {
         extra = {};
       }
+      let loveStory: LoveStoryEntry[] = [];
+      try {
+        if (invitation.love_story) loveStory = JSON.parse(invitation.love_story) as LoveStoryEntry[];
+      } catch { /* keep empty */ }
       setFormData({
         template: (invitation.template as InvitationType) ?? "classic",
         groom_full_name: invitation.groom_full_name ?? "",
@@ -527,12 +594,13 @@ export default function InvitationPage() {
         bride_instagram: extra.bride_instagram ?? "",
         opening_text: invitation.opening_text ?? "",
         ayat_source: extra.ayat_source ?? "",
-        venue_name: extra.venue_name ?? "",
-        venue_address: extra.venue_address ?? "",
-        venue_maps_url: extra.venue_maps_url ?? "",
+        love_story: loveStory,
         gift_accounts: extra.gift_accounts ?? [],
         closing_text: invitation.closing_text ?? "",
         hashtag: invitation.hashtag ?? "",
+        groom_photo_url: invitation.groom_photo_url ?? "",
+        bride_photo_url: invitation.bride_photo_url ?? "",
+        gallery_urls: invitation.gallery_urls ?? [],
         font_heading: (invitation.font_heading as FormData["font_heading"]) ?? "playfair",
         font_body: extra.font_body ?? "dmsans",
         font_heading_name: extra.font_heading_name ?? "Playfair Display",
@@ -563,9 +631,6 @@ export default function InvitationPage() {
     const extra: InvitationExtra = {
       groom_instagram: d.groom_instagram || undefined,
       bride_instagram: d.bride_instagram || undefined,
-      venue_name: d.venue_name || undefined,
-      venue_address: d.venue_address || undefined,
-      venue_maps_url: d.venue_maps_url || undefined,
       gift_accounts: d.gift_accounts.length > 0 ? d.gift_accounts : undefined,
       font_body: d.font_body,
       ayat_source: d.ayat_source || undefined,
@@ -574,6 +639,7 @@ export default function InvitationPage() {
     };
     return {
       slug: slug ?? weddingId!,
+      published: true,
       template: d.template,
       headline:
         invitation?.headline ??
@@ -581,9 +647,11 @@ export default function InvitationPage() {
       groom_full_name: d.groom_full_name || null,
       groom_nickname: d.groom_nickname || null,
       groom_parents: d.groom_parents || null,
+      groom_photo_url: d.groom_photo_url || null,
       bride_full_name: d.bride_full_name || null,
       bride_nickname: d.bride_nickname || null,
       bride_parents: d.bride_parents || null,
+      bride_photo_url: d.bride_photo_url || null,
       opening_text: d.opening_text || null,
       closing_text: d.closing_text || null,
       hashtag: d.hashtag || null,
@@ -592,6 +660,8 @@ export default function InvitationPage() {
       show_rsvp: d.show_rsvp,
       show_wishes: d.show_wishes,
       love_story_text: JSON.stringify(extra),
+      love_story: d.love_story.length > 0 ? JSON.stringify(d.love_story) : null,
+      gallery_urls: d.gallery_urls,
     };
   }
 
@@ -642,6 +712,96 @@ export default function InvitationPage() {
     } else {
       toast.error(res.error ?? "Gagal menyimpan");
     }
+  }
+
+  // ─── Photo upload helper ──────────────────────────────────────────────────
+
+  async function uploadPhoto(
+    file: File,
+    path: string,
+    maxBytes: number
+  ): Promise<string | null> {
+    if (file.size > maxBytes) {
+      toast.error(`Ukuran foto melebihi batas (${Math.round(maxBytes / 1024 / 1024 * 10) / 10} MB)`);
+      return null;
+    }
+    if (!file.type.startsWith("image/")) {
+      toast.error("File harus berupa gambar");
+      return null;
+    }
+    const supabase = createClient();
+    const ext = file.name.split(".").pop() ?? "jpg";
+    const fileName = `${weddingId}/${path}-${Date.now()}.${ext}`;
+    const { data, error } = await supabase.storage
+      .from("invitation-media")
+      .upload(fileName, file, { upsert: true });
+    if (error) {
+      toast.error("Gagal upload foto");
+      return null;
+    }
+    const { data: { publicUrl } } = supabase.storage
+      .from("invitation-media")
+      .getPublicUrl(data.path);
+    return publicUrl;
+  }
+
+  // ─── Love story helpers ───────────────────────────────────────────────────
+
+  function addLoveStoryEntry() {
+    setFormData((prev) => ({
+      ...prev,
+      love_story: [
+        ...prev.love_story,
+        { id: crypto.randomUUID(), tahun: "", cerita: "" },
+      ],
+    }));
+  }
+
+  function updateLoveStoryEntry(id: string, field: "tahun" | "cerita", value: string) {
+    setFormData((prev) => ({
+      ...prev,
+      love_story: prev.love_story.map((e) =>
+        e.id === id ? { ...e, [field]: value } : e
+      ),
+    }));
+  }
+
+  function removeLoveStoryEntry(id: string) {
+    setFormData((prev) => ({
+      ...prev,
+      love_story: prev.love_story.filter((e) => e.id !== id),
+    }));
+  }
+
+  // ─── Gallery helpers ──────────────────────────────────────────────────────
+
+  // Slot config: 0-1 = portrait (2:3), 2-4 = square (1:1)
+  const GALLERY_SLOTS = [
+    { label: "Potrait 1", hint: "2:3" },
+    { label: "Potrait 2", hint: "2:3" },
+    { label: "Square 1", hint: "1:1" },
+    { label: "Square 2", hint: "1:1" },
+    { label: "Square 3", hint: "1:1" },
+  ];
+
+  async function handleGalleryUpload(idx: number, file: File) {
+    const url = await uploadPhoto(file, `gallery-${idx}`, 500 * 1024); // 500kb
+    if (!url) return;
+    setFormData((prev) => {
+      const urls = [...prev.gallery_urls];
+      urls[idx] = url;
+      return { ...prev, gallery_urls: urls };
+    });
+  }
+
+  function removeGalleryPhoto(idx: number) {
+    setFormData((prev) => {
+      const urls = [...prev.gallery_urls];
+      urls.splice(idx, 1, "");
+      // trim trailing empty strings
+      const trimmed = urls.join(",").replace(/,+$/, "").split(",").map((u) => u);
+      return { ...prev, gallery_urls: trimmed.filter((u, i) => i < 5) };
+    });
   }
 
   // ─── Gift accounts helpers ────────────────────────────────────────────────
@@ -738,6 +898,14 @@ export default function InvitationPage() {
                 <Copy className="w-3.5 h-3.5 mr-1.5" />
                 Salin Link
               </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPreviewOpen(true)}
+              >
+                <Eye className="w-3.5 h-3.5 mr-1.5" />
+                Preview
+              </Button>
               <Link
                 href={invitationUrl}
                 target="_blank"
@@ -800,7 +968,9 @@ export default function InvitationPage() {
             {TEMPLATES.map((t) => {
               const isSelected = currentTemplate === t.id;
               const preview =
-                t.id === "classic" ? (
+                t.id === "basic" ? (
+                  <BasicPreview />
+                ) : t.id === "classic" ? (
                   <ClassicPreview />
                 ) : t.id === "modern" ? (
                   <ModernPreview />
@@ -976,37 +1146,211 @@ export default function InvitationPage() {
 
           <Separator />
 
-          {/* Lokasi */}
+          {/* Foto Profil Mempelai */}
           <div>
-            <SectionHeading>Lokasi</SectionHeading>
-            <div className="space-y-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="venue_name">Nama Venue</Label>
-                <Input
-                  id="venue_name"
-                  value={formData.venue_name}
-                  onChange={(e) => setField("venue_name", e.target.value)}
-                  placeholder="Masjid Al-Falah"
-                />
+            <SectionHeading>Foto Profil Mempelai</SectionHeading>
+            <p className="text-xs text-muted-foreground mb-3">Maks. 2 MB per foto. Format JPG, PNG, atau WebP.</p>
+            <div className="grid grid-cols-2 gap-4">
+              {/* Groom photo */}
+              <div className="space-y-2">
+                <Label className="text-xs">Foto Mempelai Pria</Label>
+                <label className="block cursor-pointer">
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const url = await uploadPhoto(file, "groom-photo", 2 * 1024 * 1024);
+                      if (url) setField("groom_photo_url", url);
+                      e.target.value = "";
+                    }}
+                  />
+                  <div className="relative aspect-[3/4] rounded-lg overflow-hidden border-2 border-dashed border-border hover:border-primary/60 transition-colors bg-muted/30 flex flex-col items-center justify-center gap-2">
+                    {formData.groom_photo_url ? (
+                      <>
+                        <img
+                          src={formData.groom_photo_url}
+                          alt="Foto pria"
+                          className="absolute inset-0 w-full h-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={(e) => { e.preventDefault(); setField("groom_photo_url", ""); }}
+                          className="absolute top-1.5 right-1.5 z-10 w-6 h-6 rounded-full bg-background/80 flex items-center justify-center hover:bg-destructive hover:text-white transition-colors"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-5 h-5 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground text-center px-2">Klik untuk upload</span>
+                      </>
+                    )}
+                  </div>
+                </label>
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="venue_address">Alamat</Label>
-                <Input
-                  id="venue_address"
-                  value={formData.venue_address}
-                  onChange={(e) => setField("venue_address", e.target.value)}
-                  placeholder="Jl. Merdeka No. 1, Jakarta Pusat"
-                />
+              {/* Bride photo */}
+              <div className="space-y-2">
+                <Label className="text-xs">Foto Mempelai Wanita</Label>
+                <label className="block cursor-pointer">
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const url = await uploadPhoto(file, "bride-photo", 2 * 1024 * 1024);
+                      if (url) setField("bride_photo_url", url);
+                      e.target.value = "";
+                    }}
+                  />
+                  <div className="relative aspect-[3/4] rounded-lg overflow-hidden border-2 border-dashed border-border hover:border-primary/60 transition-colors bg-muted/30 flex flex-col items-center justify-center gap-2">
+                    {formData.bride_photo_url ? (
+                      <>
+                        <img
+                          src={formData.bride_photo_url}
+                          alt="Foto wanita"
+                          className="absolute inset-0 w-full h-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={(e) => { e.preventDefault(); setField("bride_photo_url", ""); }}
+                          className="absolute top-1.5 right-1.5 z-10 w-6 h-6 rounded-full bg-background/80 flex items-center justify-center hover:bg-destructive hover:text-white transition-colors"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-5 h-5 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground text-center px-2">Klik untuk upload</span>
+                      </>
+                    )}
+                  </div>
+                </label>
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="venue_maps_url">Link Google Maps</Label>
-                <Input
-                  id="venue_maps_url"
-                  value={formData.venue_maps_url}
-                  onChange={(e) => setField("venue_maps_url", e.target.value)}
-                  placeholder="https://maps.app.goo.gl/..."
-                />
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Love Story */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <SectionHeading>Love Story</SectionHeading>
+              <Button variant="outline" size="sm" onClick={addLoveStoryEntry} type="button">
+                <Plus className="w-3.5 h-3.5 mr-1.5" />
+                Tambah Momen
+              </Button>
+            </div>
+            {formData.love_story.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-3 text-center">
+                Belum ada momen. Klik &quot;Tambah Momen&quot; untuk menambahkan.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {formData.love_story.map((entry, idx) => (
+                  <Card key={entry.id} className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                        Momen {idx + 1}
+                      </span>
+                      <button
+                        onClick={() => removeLoveStoryEntry(entry.id)}
+                        className="text-muted-foreground hover:text-destructive transition-colors"
+                        type="button"
+                        aria-label="Hapus momen"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs">Tahun</Label>
+                        <Input
+                          value={entry.tahun}
+                          onChange={(e) => updateLoveStoryEntry(entry.id, "tahun", e.target.value)}
+                          placeholder="2021"
+                          className="w-32"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs">Cerita</Label>
+                        <Textarea
+                          value={entry.cerita}
+                          onChange={(e) => updateLoveStoryEntry(entry.id, "cerita", e.target.value)}
+                          placeholder="Kami pertama kali bertemu di..."
+                          rows={3}
+                          className="resize-none"
+                        />
+                      </div>
+                    </div>
+                  </Card>
+                ))}
               </div>
+            )}
+          </div>
+
+          <Separator />
+
+          {/* Galeri Foto */}
+          <div>
+            <SectionHeading>Galeri Foto</SectionHeading>
+            <p className="text-xs text-muted-foreground mb-3">
+              Maks. 500 KB per foto. 2 foto <strong>Potrait</strong> (2:3) + 3 foto <strong>Square</strong> (1:1).
+            </p>
+            <div className="grid grid-cols-5 gap-2">
+              {GALLERY_SLOTS.map((slot, idx) => {
+                const url = formData.gallery_urls[idx] ?? "";
+                const isPortrait = idx < 2;
+                return (
+                  <div key={idx} className="space-y-1">
+                    <span className="text-[10px] text-muted-foreground font-medium">{slot.label}</span>
+                    <label className="block cursor-pointer">
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        className="hidden"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          await handleGalleryUpload(idx, file);
+                          e.target.value = "";
+                        }}
+                      />
+                      <div
+                        className={`relative rounded-lg overflow-hidden border-2 border-dashed border-border hover:border-primary/60 transition-colors bg-muted/30 flex flex-col items-center justify-center gap-1 ${isPortrait ? "aspect-[2/3]" : "aspect-square"}`}
+                      >
+                        {url ? (
+                          <>
+                            <img
+                              src={url}
+                              alt={slot.label}
+                              className="absolute inset-0 w-full h-full object-cover"
+                            />
+                            <button
+                              type="button"
+                              onClick={(e) => { e.preventDefault(); removeGalleryPhoto(idx); }}
+                              className="absolute top-1 right-1 z-10 w-5 h-5 rounded-full bg-background/80 flex items-center justify-center hover:bg-destructive hover:text-white transition-colors"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <ImageIcon className="w-4 h-4 text-muted-foreground/60" />
+                            <span className="text-[9px] text-muted-foreground/60">{slot.hint}</span>
+                          </>
+                        )}
+                      </div>
+                    </label>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -1318,6 +1662,19 @@ export default function InvitationPage() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* ── Preview Overlay ── */}
+      {previewOpen && wedding && (
+        <PreviewOverlay
+          formData={formData}
+          wedding={wedding}
+          sessions={previewSessions}
+          onClose={() => setPreviewOpen(false)}
+          onFormDataChange={(patch) => {
+            setFormData((prev) => ({ ...prev, ...patch } as FormData));
+          }}
+        />
+      )}
     </div>
   );
 }

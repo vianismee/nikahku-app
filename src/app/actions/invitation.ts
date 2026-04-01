@@ -23,6 +23,7 @@ export type InvitationWithSessions = Tables<"invitations"> & {
     time_start: string | null;
     time_end: string | null;
     venue: string | null;
+    venue_maps_url: string | null;
     max_capacity: number | null;
   }[];
 };
@@ -57,7 +58,7 @@ export async function getInvitation(
   // Ambil sessions
   const { data: sessions } = await supabase
     .from("sessions")
-    .select("id, name, session_date, time_start, time_end, venue, max_capacity")
+    .select("id, name, session_date, time_start, time_end, venue, venue_maps_url, max_capacity")
     .eq("wedding_id", wedding.id)
     .order("sort_order") as unknown as {
       data: InvitationWithSessions["sessions"] | null;
@@ -79,6 +80,8 @@ export async function getInvitation(
     bride_nickname: inv?.bride_nickname ?? null,
     groom_parents: inv?.groom_parents ?? null,
     bride_parents: inv?.bride_parents ?? null,
+    groom_photo_url: inv?.groom_photo_url ?? null,
+    bride_photo_url: inv?.bride_photo_url ?? null,
     hero_photo_url: inv?.hero_photo_url ?? null,
     gallery_urls: inv?.gallery_urls ?? [],
     template: inv?.template ?? "classic",
@@ -86,6 +89,7 @@ export async function getInvitation(
     font_heading: inv?.font_heading ?? "playfair",
     hashtag: inv?.hashtag ?? null,
     love_story_text: inv?.love_story_text ?? null,
+    love_story: inv?.love_story ?? null,
     show_rsvp: inv?.show_rsvp ?? true,
     show_wishes: inv?.show_wishes ?? true,
     updated_at: inv?.updated_at ?? new Date().toISOString(),

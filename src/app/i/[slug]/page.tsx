@@ -1,11 +1,25 @@
 import { getInvitation, type InvitationWithSessions } from "@/app/actions/invitation";
 import Heritage01Jawa from "@/components/invitation/heritage-01-jawa";
+import Basic from "@/components/invitation/basic";
 import type { Metadata } from "next";
+
+// ─── Template resolver ──────────────────────────────────────────────────────────
+
+function renderTemplate(template: string | null, data: import("@/components/invitation/types").InvitationPageProps) {
+  switch (template) {
+    case "basic":
+      return <Basic data={data} />;
+    case "classic":
+      return <Heritage01Jawa data={data} />;
+    default:
+      return <Basic data={data} />;
+  }
+}
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
 export type { InvitationPageProps } from "@/components/invitation/types";
-import type { InvitationPageProps } from "@/components/invitation/types";
+import type { InvitationPageProps, LoveStoryEntry } from "@/components/invitation/types";
 
 // ─── Date helpers ───────────────────────────────────────────────────────────────
 
@@ -111,31 +125,59 @@ export default async function InvitationPage({
   // Gallery
   const galleryUrls = inv.gallery_urls ?? [];
 
-  // Love story
-  type LSEntry = { tahun: string; cerita: string };
-  let loveStory: LSEntry[] = [];
+  // InvitationExtra (instagram, gifts, fonts, dsb) — disimpan di love_story_text
+  type InvExtra = {
+    groom_instagram?: string;
+    bride_instagram?: string;
+    gift_accounts?: { id: string; bank: string; account_number: string; account_name: string }[];
+    font_heading_name?: string;
+    font_body_name?: string;
+  };
+  let extra: InvExtra = {};
+  try {
+    if (inv.love_story_text) extra = JSON.parse(inv.love_story_text) as InvExtra;
+  } catch { /* ignore */ }
+
+  // Love story entries — disimpan di kolom love_story
+  let loveStory: LoveStoryEntry[] = [];
+  try {
+    if (inv.love_story) loveStory = JSON.parse(inv.love_story) as LoveStoryEntry[];
+  } catch { /* ignore */ }
+
+  // Gift accounts
+  const firstGift = extra.gift_accounts?.[0];
+
+  // Parse InvitationExtra for openingText ayat_source etc.
+  const openingText = inv.opening_text ?? "";
+  const closingText = inv.closing_text ?? "";
+
+  // ayat_source stored in InvitationExtra
+  let ayatSource = "";
   try {
     if (inv.love_story_text) {
-      loveStory = JSON.parse(inv.love_story_text) as LSEntry[];
+      const ex = JSON.parse(inv.love_story_text) as { ayat_source?: string };
+      ayatSource = ex.ayat_source ?? "";
     }
-  } catch {
-    /* use default */
-  }
+  } catch { /* ignore */ }
 
   const pageData: InvitationPageProps = {
     namaWanitaPanggil,
     namaWanitaLengkap,
     inisialWanita: namaWanitaPanggil.charAt(0).toUpperCase(),
     ortuWanita: inv.bride_parents ?? "",
-    igWanita: "",
-    igWanitaUrl: "https://www.instagram.com/",
+    igWanita: extra.bride_instagram ?? "",
+    igWanitaUrl: extra.bride_instagram
+      ? `https://www.instagram.com/${extra.bride_instagram.replace(/^@/, "")}`
+      : "https://www.instagram.com/",
 
     namaPriaPanggil,
     namaPriaLengkap,
     inisialPria: namaPriaPanggil.charAt(0).toUpperCase(),
     ortuPria: inv.groom_parents ?? "",
-    igPria: "",
-    igPriaUrl: "https://www.instagram.com/",
+    igPria: extra.groom_instagram ?? "",
+    igPriaUrl: extra.groom_instagram
+      ? `https://www.instagram.com/${extra.groom_instagram.replace(/^@/, "")}`
+      : "https://www.instagram.com/",
 
     tanggalSingkat: formatDateShort(tanggalRef),
     tanggalHeader: formatDateLong(tanggalRef),
@@ -144,16 +186,28 @@ export default async function InvitationPage({
     akad,
     resepsi,
 
+    themeColor: inv.theme_color ?? "#8B6F4E",
+    fontHeading: inv.font_heading ?? "playfair",
+    fontBody: "dmsans",
+    fontHeadingName: extra.font_heading_name || undefined,
+    fontBodyName: extra.font_body_name || undefined,
+
+    openingText,
+    ayatSource,
+    closingText,
+
     galleryUrls,
     musicUrl: "",
     heroPhotoUrl: inv.hero_photo_url ?? null,
+    groomPhotoUrl: inv.groom_photo_url ?? null,
+    bridePhotoUrl: inv.bride_photo_url ?? null,
     hashtag: inv.hashtag ?? `${namaPriaPanggil}${namaWanitaPanggil}`.replace(/\s/g, ""),
 
     loveStory,
 
-    bankNama: "",
-    bankNorek: "",
-    bankAtasnama: namaWanitaLengkap,
+    bankNama: firstGift?.bank ?? "",
+    bankNorek: firstGift?.account_number ?? "",
+    bankAtasnama: firstGift?.account_name ?? namaWanitaLengkap,
     kadoNama: namaWanitaLengkap,
     kadoAlamat: "",
 
@@ -166,5 +220,5 @@ export default async function InvitationPage({
     sessions,
   };
 
-  return <Heritage01Jawa data={pageData} />;
+  return renderTemplate(inv.template, pageData);
 }

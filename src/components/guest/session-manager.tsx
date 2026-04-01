@@ -38,6 +38,7 @@ interface SessionFormState {
   time_start: string;
   time_end: string;
   venue: string;
+  venue_maps_url: string;
   max_capacity: string;
 }
 
@@ -47,6 +48,7 @@ const EMPTY_FORM: SessionFormState = {
   time_start: "",
   time_end: "",
   venue: "",
+  venue_maps_url: "",
   max_capacity: "",
 };
 
@@ -83,6 +85,7 @@ export function SessionManager({ weddingId, guests }: SessionManagerProps) {
       time_start: session.time_start ?? "",
       time_end: session.time_end ?? "",
       venue: session.venue ?? "",
+      venue_maps_url: session.venue_maps_url ?? "",
       max_capacity: session.max_capacity != null ? String(session.max_capacity) : "",
     });
     setFormOpen(true);
@@ -100,6 +103,7 @@ export function SessionManager({ weddingId, guests }: SessionManagerProps) {
       time_start: form.time_start || null,
       time_end: form.time_end || null,
       venue: form.venue || null,
+      venue_maps_url: form.venue_maps_url || null,
       max_capacity: form.max_capacity ? parseInt(form.max_capacity) : null,
     };
 
@@ -296,6 +300,15 @@ export function SessionManager({ weddingId, guests }: SessionManagerProps) {
                 value={form.venue}
                 onChange={(e) => setForm((f) => ({ ...f, venue: e.target.value }))}
                 placeholder="Contoh: Gedung A, Masjid Al-Ikhlas"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Link Google Maps <span className="text-muted-foreground font-normal">(Opsional)</span></Label>
+              <Input
+                value={form.venue_maps_url}
+                onChange={(e) => setForm((f) => ({ ...f, venue_maps_url: e.target.value }))}
+                placeholder="https://maps.app.goo.gl/..."
               />
             </div>
           </div>

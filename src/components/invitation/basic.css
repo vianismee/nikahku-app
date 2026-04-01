@@ -1,0 +1,180 @@
+.inv-basic {
+  --inv-accent: #8b6f4e;
+  --inv-accent-light: color-mix(in srgb, var(--inv-accent) 12%, white);
+  --inv-accent-mid: color-mix(in srgb, var(--inv-accent) 30%, white);
+  --inv-bg: #fafaf8;
+  --inv-text: #1a1a1a;
+  --inv-muted: #6b7280;
+  --inv-border: color-mix(in srgb, var(--inv-accent) 20%, white);
+  --inv-card: #ffffff;
+  --inv-radius: 16px;
+
+  font-family: var(--inv-font-body, 'DM Sans', sans-serif);
+  background: var(--inv-bg);
+  color: var(--inv-text);
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+/* Typography */
+.inv-basic .inv-heading {
+  font-family: var(--inv-font-heading, 'Playfair Display', serif);
+}
+
+/* Divider ornament */
+.inv-basic .inv-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+}
+.inv-basic .inv-divider::before,
+.inv-basic .inv-divider::after {
+  content: '';
+  flex: 1;
+  max-width: 80px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--inv-accent));
+}
+.inv-basic .inv-divider::after {
+  background: linear-gradient(to left, transparent, var(--inv-accent));
+}
+
+/* Cover backdrop blur overlay */
+.inv-basic .inv-cover-overlay {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.25) 0%,
+    rgba(0, 0, 0, 0.05) 40%,
+    rgba(0, 0, 0, 0.05) 60%,
+    rgba(0, 0, 0, 0.45) 100%
+  );
+}
+
+/* Scroll fade-in animation */
+@keyframes inv-fadein {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.inv-basic .inv-section {
+  animation: inv-fadein 0.6s ease both;
+}
+
+/* Gallery grid: 2 portrait + 3 square */
+.inv-basic .inv-gallery {
+  display: grid;
+  gap: 8px;
+}
+.inv-basic .inv-gallery-main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.inv-basic .inv-gallery-sub {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+/* Love story timeline */
+.inv-basic .inv-timeline {
+  position: relative;
+  padding-left: 24px;
+}
+.inv-basic .inv-timeline::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 8px;
+  bottom: 8px;
+  width: 1.5px;
+  background: linear-gradient(to bottom, var(--inv-accent), transparent);
+}
+.inv-basic .inv-timeline-dot {
+  position: absolute;
+  left: -24px;
+  top: 4px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--inv-accent);
+  border: 2px solid var(--inv-bg);
+  box-shadow: 0 0 0 2px var(--inv-accent);
+}
+
+/* RSVP & Wishes card */
+.inv-basic .inv-card {
+  background: var(--inv-card);
+  border-radius: var(--inv-radius);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+}
+
+/* Countdown boxes */
+.inv-basic .inv-countdown-box {
+  background: var(--inv-accent-light);
+  border: 1px solid var(--inv-border);
+  border-radius: 12px;
+  padding: 12px 8px;
+  min-width: 64px;
+  text-align: center;
+}
+
+/* Cover section full screen */
+.inv-basic .inv-cover {
+  min-height: 100dvh;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Code gate */
+.inv-basic .inv-code-input {
+  width: 44px;
+  height: 52px;
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  border: 2px solid var(--inv-border);
+  border-radius: 10px;
+  background: white;
+  color: var(--inv-text);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  text-transform: uppercase;
+}
+.inv-basic .inv-code-input:focus {
+  border-color: var(--inv-accent);
+  box-shadow: 0 0 0 3px var(--inv-accent-light);
+}
+
+/* Wishes list scroll */
+.inv-basic .inv-wishes-list {
+  max-height: 320px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--inv-border) transparent;
+}
+
+/* Pax selector */
+.inv-basic .inv-pax-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1.5px solid var(--inv-border);
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--inv-accent);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.inv-basic .inv-pax-btn:hover {
+  background: var(--inv-accent);
+  color: white;
+}
