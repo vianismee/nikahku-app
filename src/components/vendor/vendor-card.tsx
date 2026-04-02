@@ -1,188 +1,170 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { Card } from "@/components/ui/card";
-import { StatusBadge } from "@/components/shared/status-badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import { VENDOR_STATUSES } from "@/lib/constants/vendor-statuses";
-import { formatRupiah, getVendorPriceInfo } from "@/lib/utils/format-currency";
-import { Star, MapPin, ChevronRight } from "lucide-react";
-import { useUIStore } from "@/lib/stores/ui-store";
-import type { VendorWithRelations } from "@/lib/hooks/use-vendors";
+import { Badge } from "@/components/ui/badge";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { VendorFormSheet } from "@/components/vendor/vendor-form-sheet";
+import { VENDOR_STATUSES, VENDOR_STATUS_PIPELINE } from "@/lib/constants/vendor-statuses";
+import { formatRupiah } from "@/lib/utils/format-currency";
+import { useDeleteVendor, useUpdateVendor } from "@/lib/hooks/use-vendors";
+import { Pencil, Trash2, ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { toast } from "sonner";
+import type { VendorWithRelations, VendorDetail } from "@/lib/hooks/use-vendors";
+import type { VendorStatus } from "@/lib/constants/vendor-statuses";
 
 interface VendorCardProps {
   vendor: VendorWithRelations;
+  weddingId: string;
 }
 
-export function VendorCard({ vendor }: VendorCardProps) {
-  const {
-    vendorCompareIds,
-    vendorCompareCategoryId,
-    addVendorCompare,
-    removeVendorCompare,
-  } = useUIStore();
-  const statusInfo = VENDOR_STATUSES[vendor.status];
-  const isComparing = vendorCompareIds.includes(vendor.id);
+export function VendorCard({ vendor, weddingId }: VendorCardProps) {
+  const [editOpen, setEditOpen] = useState(false);
+  const deleteVendor = useDeleteVendor();
+  const updateVendor = useUpdateVendor();
+
   const category = vendor.vendor_categories;
-  const categoryColor = category?.color ?? "#8B6F4E";
 
-  // Disable checkbox if different category is already selected, or max reached
-  const isDifferentCategory =
-    vendorCompareCategoryId !== null &&
-    vendor.category_id !== vendorCompareCategoryId;
-  const isMaxReached =
-    vendorCompareIds.length >= 4 && !isComparing;
-  const isDisabled = isDifferentCategory || isMaxReached;
+  // Estimasi: price range from packages
+  const packagePrices = (vendor.vendor_packages ?? [])
+    .map((p) => p.price)
+    .filter((p) => p > 0)
+    .sort((a, b) => a - b);
+  const estimasi =
+    packagePrices.length === 0
+      ? "–"
+      : packagePrices.length === 1 || packagePrices[0] === packagePrices[packagePrices.length - 1]
+        ? formatRupiah(packagePrices[0])
+        : `${formatRupiah(packagePrices[0])} – ${formatRupiah(packagePrices[packagePrices.length - 1])}`;
 
-  const tooltipText = isDifferentCategory
-    ? "Hanya bisa membandingkan vendor dengan kategori yang sama"
-    : isMaxReached
-      ? "Maksimal 4 vendor"
-      : "";
+  // Deal: price_deal
+  const deal = formatRupiah(vendor.price_deal ?? 0);
 
-  const checkbox = (
-    <Checkbox
-      checked={isComparing}
-      disabled={isDisabled}
-      onCheckedChange={(checked) => {
-        if (checked) addVendorCompare(vendor.id, vendor.category_id);
-        else removeVendorCompare(vendor.id);
-      }}
-      aria-label="Bandingkan"
-    />
-  );
+  // Contact
+  const contact = vendor.contact_wa ?? vendor.contact_phone ?? "–";
+
+  // Status pipeline navigation
+  const isCancelled = vendor.status === "cancelled";
+  const currentIdx = VENDOR_STATUS_PIPELINE.indexOf(vendor.status as VendorStatus);
+  const prevStatus = !isCancelled && currentIdx > 0 ? VENDOR_STATUS_PIPELINE[currentIdx - 1] : null;
+  const nextStatus =
+    !isCancelled && currentIdx >= 0 && currentIdx < VENDOR_STATUS_PIPELINE.length - 1
+      ? VENDOR_STATUS_PIPELINE[currentIdx + 1]
+      : null;
+  const nextLabel = nextStatus
+    ? VENDOR_STATUSES[nextStatus].label
+    : VENDOR_STATUSES[vendor.status as VendorStatus].label;
+
+  async function handleDelete() {
+    try {
+      await deleteVendor.mutateAsync({ id: vendor.id, weddingId });
+      toast.success("Vendor berhasil dihapus");
+    } catch {
+      toast.error("Gagal menghapus vendor");
+    }
+  }
+
+  function handleStatusChange(newStatus: VendorStatus) {
+    updateVendor.mutate({ id: vendor.id, status: newStatus });
+  }
 
   return (
-    <Link href={`/vendor/${vendor.id}`}>
-      <Card
-        className={`group hover:border-primary/40 transition-all overflow-hidden ${
-          isComparing ? "ring-2 ring-primary/40 border-primary/40" : ""
-        }`}
-      >
-        {/* Category Header */}
-        <div
-          className="px-4 py-3 flex items-center justify-between"
-          style={{ backgroundColor: `${categoryColor}10` }}
-        >
-          <div className="flex items-center gap-2.5">
-            <div
-              className="flex items-center justify-center h-9 w-9 rounded-lg text-lg"
-              style={{ backgroundColor: `${categoryColor}20` }}
+    <>
+      <div className="relative overflow-hidden rounded-xl border border-border/60 p-3.5 space-y-2.5 hover:shadow-md transition-all bg-gradient-to-br from-rose-soft/25 via-card to-muted/15">
+        {/* Header: Name + Category badge | Edit + Delete buttons */}
+        <div className="flex items-start gap-2">
+          <div className="flex-1 min-w-0">
+            <Link href={`/vendor/${vendor.id}`}>
+              <p className="font-heading font-semibold text-sm break-words hover:text-primary transition-colors">
+                {vendor.name}
+              </p>
+            </Link>
+            {category && (
+              <Badge variant="outline" className="h-6 font-normal text-xs mt-1">
+                {category.name}
+              </Badge>
+            )}
+          </div>
+          <div className="flex gap-0.5 shrink-0">
+            <button
+              className="p-1.5 rounded-lg hover:bg-accent"
+              onClick={() => setEditOpen(true)}
+              aria-label="Edit vendor"
             >
-              {category?.icon ?? "📦"}
-            </div>
-            <div>
-              <span className="text-xs font-medium" style={{ color: categoryColor }}>
-                {category?.name ?? "Lainnya"}
-              </span>
-            </div>
-          </div>
-          <div
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-            }}
-          >
-            {isDisabled && tooltipText ? (
-              <Tooltip>
-                <TooltipTrigger render={<span className="inline-flex" />}>
-                  {checkbox}
-                </TooltipTrigger>
-                <TooltipContent>{tooltipText}</TooltipContent>
-              </Tooltip>
-            ) : (
-              checkbox
-            )}
+              <Pencil className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+            </button>
+            <ConfirmDialog
+              trigger={
+                <button
+                  className="p-1.5 rounded-lg hover:bg-destructive/10"
+                  aria-label="Hapus vendor"
+                >
+                  <Trash2 className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" aria-hidden="true" />
+                </button>
+              }
+              title="Hapus Vendor"
+              description={`Yakin ingin menghapus vendor "${vendor.name}"? Tindakan ini tidak dapat dibatalkan.`}
+              onConfirm={handleDelete}
+            />
           </div>
         </div>
 
-        {/* Body */}
-        <div className="px-4 py-3.5 space-y-3">
-          {/* Name + City */}
+        {/* Price Grid */}
+        <div className="grid grid-cols-2 gap-x-3 text-sm">
           <div>
-            <h3 className="font-heading font-semibold text-base group-hover:text-primary transition-colors line-clamp-1">
-              {vendor.name}
-            </h3>
-            {vendor.city && (
-              <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
-                <MapPin className="h-3 w-3 shrink-0" />
-                {vendor.city}
-              </div>
-            )}
+            <p className="text-[10px] text-muted-foreground">Estimasi</p>
+            <p className="font-number font-medium tabular-nums text-xs">{estimasi}</p>
           </div>
-
-          {/* Rating */}
-          {vendor.rating ? (
-            <div className="flex items-center gap-1.5">
-              <div className="flex items-center gap-0.5">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`h-3.5 w-3.5 ${
-                      i < vendor.rating!
-                        ? "fill-yellow-400 text-yellow-400"
-                        : "text-muted-foreground/20"
-                    }`}
-                  />
-                ))}
-              </div>
-              <span className="text-xs font-number text-muted-foreground">{vendor.rating}/5</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-1">
-              <div className="flex items-center gap-0.5">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className="h-3.5 w-3.5 text-muted-foreground/20" />
-                ))}
-              </div>
-              <span className="text-xs text-muted-foreground">Belum dirating</span>
-            </div>
-          )}
-
-          {/* Divider */}
-          <hr className="border-border" />
-
-          {/* Footer: Status + Price */}
-          <div className="flex items-center justify-between gap-2">
-            <StatusBadge {...statusInfo} />
-            <div className="shrink-0 text-right min-w-0">
-              {(() => {
-                const info = getVendorPriceInfo(vendor);
-                if (info.type === "deal") {
-                  return (
-                    <span className="font-number text-xs sm:text-sm font-bold whitespace-nowrap text-primary">
-                      {formatRupiah(info.deal)}
-                    </span>
-                  );
-                }
-                if (info.type === "range") {
-                  return info.min === info.max ? (
-                    <span className="font-number text-xs font-semibold whitespace-nowrap">
-                      {formatRupiah(info.min)}
-                    </span>
-                  ) : (
-                    <span className="font-number text-[10px] sm:text-xs whitespace-nowrap text-muted-foreground">
-                      {formatRupiah(info.min)} – {formatRupiah(info.max)}
-                    </span>
-                  );
-                }
-                return (
-                  <span className="text-[10px] sm:text-xs text-muted-foreground italic whitespace-nowrap">
-                    Belum ada harga
-                  </span>
-                );
-              })()}
-            </div>
-          </div>
-
-          {/* Detail Link Hint */}
-          <div className="flex items-center justify-end gap-1 text-xs text-muted-foreground group-hover:text-primary transition-colors">
-            Lihat detail
-            <ChevronRight className="h-3 w-3" />
+          <div>
+            <p className="text-[10px] text-muted-foreground">Deal</p>
+            <p className="font-number font-semibold tabular-nums text-xs text-primary">{deal}</p>
           </div>
         </div>
-      </Card>
-    </Link>
+
+        {/* Contact + Rating */}
+        <div className="flex items-center justify-between pt-2 border-t border-border/40">
+          <p className="text-xs text-muted-foreground">{contact}</p>
+          <div className="flex items-center gap-0.5">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Star
+                key={i}
+                className={`h-3 w-3 ${
+                  vendor.rating && i < vendor.rating
+                    ? "fill-yellow-400 text-yellow-400"
+                    : "text-muted-foreground/20"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Status Navigation */}
+        <div className="flex items-center justify-between pt-2 border-t border-border/40">
+          <button
+            disabled={!prevStatus}
+            onClick={() => prevStatus && handleStatusChange(prevStatus)}
+            className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium transition-colors text-muted-foreground hover:bg-accent hover:text-foreground disabled:text-muted-foreground/20 disabled:cursor-default disabled:pointer-events-none"
+            aria-label="Status sebelumnya"
+          >
+            <ChevronLeft className="h-3 w-3" aria-hidden="true" />
+          </button>
+          <button
+            disabled={!nextStatus}
+            onClick={() => nextStatus && handleStatusChange(nextStatus)}
+            className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium transition-colors text-muted-foreground hover:bg-accent hover:text-foreground disabled:text-muted-foreground/20 disabled:cursor-default disabled:pointer-events-none"
+          >
+            {nextLabel}
+            <ChevronRight className="h-3 w-3" aria-hidden="true" />
+          </button>
+        </div>
+      </div>
+
+      <VendorFormSheet
+        weddingId={weddingId}
+        vendor={vendor as unknown as VendorDetail}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+      />
+    </>
   );
 }

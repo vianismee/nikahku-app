@@ -154,7 +154,7 @@ export default function VendorPage() {
         </p>
       ) : vendorViewMode === "grid" ? (
         <div className="space-y-4">
-          <VendorGrid vendors={pagedForGrid} />
+          <VendorGrid vendors={pagedForGrid} weddingId={weddingId} />
           <TablePagination
             currentPage={safeGridPage}
             totalPages={gridTotalPages}

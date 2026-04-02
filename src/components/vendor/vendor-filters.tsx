@@ -41,42 +41,44 @@ export function VendorFilters({
         />
       </div>
 
-      <Select
-        value={categoryFilter}
-        onValueChange={(v) => onCategoryChange(v ?? "all")}
-        items={[
-          { value: "all", label: "Semua Kategori" },
-          ...(categories?.map((cat) => ({ value: cat.id, label: `${cat.icon} ${cat.name}` })) ?? []),
-        ]}
-      >
-        <SelectTrigger className="w-44">
-          <SelectValue placeholder="Semua Kategori" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Semua Kategori</SelectItem>
-          {categories?.map((cat) => (
-            <SelectItem key={cat.id} value={cat.id}>
-              {cat.icon} {cat.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      <Select value={statusFilter} onValueChange={(v) => onStatusChange(v ?? "all")}>
-        <SelectTrigger className="w-40">
-          <SelectValue placeholder="Semua Status" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Semua Status</SelectItem>
-          {(Object.entries(VENDOR_STATUSES) as [VendorStatus, { label: string }][]).map(
-            ([key, { label }]) => (
-              <SelectItem key={key} value={key}>
-                {label}
+      <div className="flex gap-3">
+        <Select
+          value={categoryFilter}
+          onValueChange={(v) => onCategoryChange(v ?? "all")}
+          items={[
+            { value: "all", label: "Semua Kategori" },
+            ...(categories?.map((cat) => ({ value: cat.id, label: `${cat.icon} ${cat.name}` })) ?? []),
+          ]}
+        >
+          <SelectTrigger className="w-44 flex-1 sm:flex-none">
+            <SelectValue placeholder="Semua Kategori" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Semua Kategori</SelectItem>
+            {categories?.map((cat) => (
+              <SelectItem key={cat.id} value={cat.id}>
+                {cat.icon} {cat.name}
               </SelectItem>
-            )
-          )}
-        </SelectContent>
-      </Select>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={statusFilter} onValueChange={(v) => onStatusChange(v ?? "all")}>
+          <SelectTrigger className="w-40 flex-1 sm:flex-none">
+            <SelectValue placeholder="Semua Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Semua Status</SelectItem>
+            {(Object.entries(VENDOR_STATUSES) as [VendorStatus, { label: string }][]).map(
+              ([key, { label }]) => (
+                <SelectItem key={key} value={key}>
+                  {label}
+                </SelectItem>
+              )
+            )}
+          </SelectContent>
+        </Select>
+      </div>
 
       <div className="flex items-center gap-2 ml-auto">
         {vendorCompareIds.length >= 2 && (
